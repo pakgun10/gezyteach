@@ -395,8 +395,18 @@ Setelah MVP stabil, fitur yang dapat dipertimbangkan:
 - Kalender integrasi.
 - Migrasi database ke MySQL/MariaDB untuk deployment bersama.
 
-## 13. Akses 
-Setelah ready production, maka akan dijalankan:
-- VPS di : 107.172.27.102 untuk masuknya ssh pgun@107.172.27.102
-- subdomain: teach.gezytech.web.id
-- Pakai SSL NGINX
+## 13. Akses Produksi
+
+Aplikasi sudah di-deploy ke production dengan detail sebagai berikut:
+
+- **VPS**: `107.172.27.102` (akses via `ssh pgun@107.172.27.102`)
+- **Subdomain**: `teach.gezytech.web.id`
+- **SSL**: Let's Encrypt via nginx (proxy ke PM2 process `gezyteach` di port `3002`)
+- **Proses**: dikelola dengan PM2 (`pm2 restart gezyteach`, `pm2 logs gezyteach`)
+
+> **Kredensial login produksi** tidak disimpan di dokumen ini karena repo bersifat publik. Simpan kredensial (email & password akun guru produksi) di password manager Anda. Password default seed lokal (`gezyteach123`) **tidak** dipakai di production — sudah diganti dengan password acak saat seeding awal, dan sebaiknya diganti lagi lewat halaman `/app/profile` setelah login pertama.
+
+**Catatan operasional:**
+- Database SQLite file ada di `~/gezyteach/data/gezyteach.db` di VPS — pastikan folder `data/` masuk rencana backup rutin Anda karena tidak ter-cover git.
+- Untuk update aplikasi ke depan: `cd ~/gezyteach && git pull && bun install && bun run db:migrate && bun run build:css && pm2 restart gezyteach`.
+- Sertifikat SSL dipakai bersama 5 domain (`aios`, `chat`, `lms`, `platform`, `teach`), jadi kalau nanti mau tambah domain lagi, ikuti pola yang sama (issue ulang dengan `--force` menyertakan semua domain existing + domain baru).
