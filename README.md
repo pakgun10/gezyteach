@@ -90,6 +90,15 @@ gezyteach/
 | `bun run build:css` | Build CSS Tailwind (minified) |
 | `bun run dev:css` | Build CSS Tailwind (watch mode) |
 
+## Fitur
+
+- **Jadwal** — kelola jadwal mengajar mingguan per kelas dan mata pelajaran
+- **Jurnal** — jurnal mengajar harian, dibuat otomatis dari jadwal, tinggal dilengkapi
+- **Nilai** — rencana komponen nilai per bobot + input nilai satu tabel per kelas/mapel
+- **Absensi** — catat kehadiran siswa per sesi jadwal per tanggal
+- **Data Siswa** — CRUD siswa per kelas, termasuk import CSV
+- **Perangkat KBM** — kelola tautan Google Drive perangkat mengajar per kategori
+
 ## Status Pengembangan
 
-Proyek ini sedang dalam tahap pengembangan aktif mengikuti milestone di [`docs/IMPLEMENTATION_PLAN.md`](./docs/IMPLEMENTATION_PLAN.md). Saat ini: fondasi proyek (database, server, styling) sudah berjalan.
+Seluruh fitur inti (Milestone 1–5) pada [`docs/IMPLEMENTATION_PLAN.md`](./docs/IMPLEMENTATION_PLAN.md) sudah selesai diimplementasikan dan diverifikasi. Saat ini mendukung satu akun guru (MVP); dukungan multi-guru direncanakan sebagai iterasi berikutnya.

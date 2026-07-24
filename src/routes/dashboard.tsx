@@ -42,9 +42,7 @@ dashboardRoutes.get("/app", async (c) => {
           <p class="text-sm text-slate-500">Kelas</p>
         </div>
         <div class="bg-white rounded-2xl border border-slate-200 p-4">
-          <p class="text-2xl font-semibold text-emerald-700">
-            {totalStudents}
-          </p>
+          <p class="text-2xl font-semibold text-emerald-700">{totalStudents}</p>
           <p class="text-sm text-slate-500">Siswa</p>
         </div>
       </div>
@@ -77,6 +75,20 @@ dashboardRoutes.get("/app", async (c) => {
         >
           <span class="text-2xl">📊</span>
           <p class="text-sm font-medium mt-1">Nilai</p>
+        </a>
+        <a
+          href="/app/students"
+          class="bg-white rounded-2xl border border-slate-200 p-4 text-center hover:border-emerald-300"
+        >
+          <span class="text-2xl">🎓</span>
+          <p class="text-sm font-medium mt-1">Data Siswa</p>
+        </a>
+        <a
+          href="/app/resources"
+          class="bg-white rounded-2xl border border-slate-200 p-4 text-center hover:border-emerald-300"
+        >
+          <span class="text-2xl">📁</span>
+          <p class="text-sm font-medium mt-1">Perangkat</p>
         </a>
       </div>
     </Layout>,
