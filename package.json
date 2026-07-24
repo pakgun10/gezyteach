@@ -1,0 +1,35 @@
+{
+  "name": "gezyteach",
+  "module": "src/index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "bun run --hot src/index.ts",
+    "start": "bun run src/index.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "bun run src/db/migrate.ts",
+    "db:seed": "bun run src/db/seed.ts",
+    "build:css": "tailwindcss -i ./src/static/input.css -o ./src/static/style.css --minify",
+    "dev:css": "tailwindcss -i ./src/static/input.css -o ./src/static/style.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "@types/bun": "latest",
+    "@types/papaparse": "^5.5.2",
+    "drizzle-kit": "^0.31.10",
+    "tailwindcss": "^4.3.3"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.2",
+    "hono": "^4.12.32",
+    "htmx.org": "^2.0.10",
+    "papaparse": "^5.5.4",
+    "zod": "^4.4.3"
+  },
+  "trustedDependencies": [
+    "@parcel/watcher"
+  ]
+}
