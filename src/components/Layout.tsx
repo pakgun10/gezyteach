@@ -31,9 +31,12 @@ export const Layout: FC<LayoutProps> = ({
               <span class="font-semibold text-lg text-emerald-700">
                 GezyTeach
               </span>
-              <span class="text-sm text-slate-500 truncate max-w-[45%]">
+              <a
+                href="/app/profile"
+                class="text-sm text-slate-500 truncate max-w-[45%] hover:text-emerald-700"
+              >
                 {user.name}
-              </span>
+              </a>
             </header>
             <main class="flex-1 px-4 py-4 pb-24 max-w-3xl w-full mx-auto">
               {children}

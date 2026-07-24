@@ -68,3 +68,36 @@ export async function destroySession(sessionId: string | undefined) {
   if (!sessionId) return;
   await db.delete(sessions).where(eq(sessions.id, sessionId));
 }
+
+export type ChangePasswordResult =
+  { ok: true } | { ok: false; error: "invalid_current" | "too_short" };
+
+const MIN_PASSWORD_LENGTH = 8;
+
+export async function changePassword(
+  userId: number,
+  currentPassword: string,
+  newPassword: string,
+): Promise<ChangePasswordResult> {
+  const user = await db.query.users.findFirst({
+    where: (u, { eq: eqFn }) => eqFn(u.id, userId),
+  });
+
+  if (!user) return { ok: false, error: "invalid_current" };
+
+  const valid = await Bun.password.verify(currentPassword, user.passwordHash);
+  if (!valid) return { ok: false, error: "invalid_current" };
+
+  if (newPassword.length < MIN_PASSWORD_LENGTH) {
+    return { ok: false, error: "too_short" };
+  }
+
+  const passwordHash = await Bun.password.hash(newPassword);
+
+  await db
+    .update(users)
+    .set({ passwordHash, updatedAt: Date.now() })
+    .where(eq(users.id, userId));
+
+  return { ok: true };
+}

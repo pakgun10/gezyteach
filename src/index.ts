@@ -5,6 +5,7 @@ import { attendanceRoutes } from "./routes/attendance.tsx";
 import { authRoutes } from "./routes/auth.tsx";
 import { dashboardRoutes } from "./routes/dashboard.tsx";
 import { journalRoutes } from "./routes/journal.tsx";
+import { profileRoutes } from "./routes/profile.tsx";
 import { resourcesRoutes } from "./routes/resources.tsx";
 import { scheduleRoutes } from "./routes/schedule.tsx";
 import { scoresRoutes } from "./routes/scores.tsx";
@@ -28,6 +29,7 @@ app.route("/", journalRoutes);
 app.route("/", attendanceRoutes);
 app.route("/", scoresRoutes);
 app.route("/", resourcesRoutes);
+app.route("/", profileRoutes);
 
 const port = Number(process.env.PORT ?? 3000);
 
