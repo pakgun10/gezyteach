@@ -1,10 +1,12 @@
 import { Hono } from "hono";
 import { serveStatic } from "hono/bun";
 import { requireAuth } from "./middleware/auth";
+import { attendanceRoutes } from "./routes/attendance.tsx";
 import { authRoutes } from "./routes/auth.tsx";
 import { dashboardRoutes } from "./routes/dashboard.tsx";
 import { journalRoutes } from "./routes/journal.tsx";
 import { scheduleRoutes } from "./routes/schedule.tsx";
+import { scoresRoutes } from "./routes/scores.tsx";
 import { studentsRoutes } from "./routes/students.tsx";
 
 const app = new Hono();
@@ -22,6 +24,8 @@ app.route("/", dashboardRoutes);
 app.route("/", studentsRoutes);
 app.route("/", scheduleRoutes);
 app.route("/", journalRoutes);
+app.route("/", attendanceRoutes);
+app.route("/", scoresRoutes);
 
 const port = Number(process.env.PORT ?? 3000);
 
