@@ -226,13 +226,29 @@
             0 0 16px rgb(var(--gt-glow) / 0.15);
     }
     .dark .gt-input {
-        background-color: rgb(var(--gt-surface) / 0.6);
-        border-color: rgb(var(--gt-border) / 0.7);
+        background-color: rgb(var(--gt-surface) / 0.7);
+        border-color: rgb(var(--gt-border) / 0.8);
+        color: rgb(var(--gt-text));
+    }
+    .dark .gt-input::placeholder {
+        color: rgb(148 163 184);
     }
     .dark .gt-input:focus {
         box-shadow:
             0 0 0 3px rgb(var(--gt-ring) / 0.25),
             0 0 20px rgb(var(--gt-glow) / 0.25);
+    }
+
+    /* Option pada dropdown select agar selalu kontras pada mode gelap */
+    .dark select.gt-input option,
+    .dark option {
+        background-color: rgb(15 23 42);
+        color: rgb(241 245 249);
+    }
+
+    /* Indikator picker tanggal/waktu pada mode gelap */
+    .dark input::-webkit-calendar-picker-indicator {
+        filter: invert(0.9);
     }
 
     /* Label form */
@@ -258,7 +274,8 @@
         color: rgb(var(--gt-text-muted));
     }
     .dark .gt-table-head {
-        background-color: rgb(var(--gt-surface) / 0.5);
+        background-color: rgb(var(--gt-surface) / 0.85);
+        color: rgb(var(--gt-text));
     }
 
     /* Background solid untuk sel tabel sticky (tanpa border-radius/border,
@@ -267,13 +284,21 @@
         background-color: rgb(var(--gt-surface));
     }
     .dark .gt-surface-solid {
-        background-color: rgb(var(--gt-surface) / 0.9);
+        background-color: rgb(15 23 42);
+        color: rgb(var(--gt-text));
     }
     .gt-table-row-border {
         border-top: 1px solid rgb(var(--gt-border-soft));
+        transition: background-color 0.15s ease;
     }
     .dark .gt-table-row-border {
-        border-top: 1px solid rgb(var(--gt-border) / 0.4);
+        border-top: 1px solid rgb(var(--gt-border) / 0.5);
+    }
+    .gt-table-row-border:hover {
+        background-color: rgb(var(--gt-border-soft) / 0.4);
+    }
+    .dark .gt-table-row-border:hover {
+        background-color: rgb(255 255 255 / 0.04);
     }
 
     /* Badge status (hadir/sakit/izin/alpa, aktif/nonaktif) */
@@ -314,8 +339,8 @@
         color: rgb(var(--gt-text-muted));
     }
     .dark .gt-badge-slate {
-        background-color: rgb(var(--gt-border) / 0.3);
-        color: rgb(var(--gt-text-muted));
+        background-color: rgb(var(--gt-border) / 0.5);
+        color: rgb(var(--gt-text));
     }
 
     /* Link tombol kecil (Buka, Aktifkan, Hapus) */

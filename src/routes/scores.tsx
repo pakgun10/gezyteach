@@ -141,7 +141,7 @@ scoresRoutes.get("/app/scores", async (c) => {
                 <table class="w-full text-sm">
                   <thead class="gt-table-head">
                     <tr>
-                      <th class="gt-table-head text-left px-3 py-2 sticky left-0">
+                      <th class="gt-surface-solid text-left px-3 py-2 sticky left-0 z-10 font-semibold">
                         Nama
                       </th>
                       {plans.map((plan) => (
@@ -155,7 +155,7 @@ scoresRoutes.get("/app/scores", async (c) => {
                   <tbody>
                     {rows.map((row) => (
                       <tr class="gt-table-row-border">
-                        <td class="gt-surface-solid px-3 py-2 sticky left-0 whitespace-nowrap">
+                        <td class="gt-surface-solid px-3 py-2 sticky left-0 z-10 whitespace-nowrap font-medium">
                           {row.student.name}
                         </td>
                         {plans.map((plan) => (
