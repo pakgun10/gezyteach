@@ -18,7 +18,7 @@ export const scoresRoutes = new Hono<AppContext>();
 
 scoresRoutes.get("/app/scores", async (c) => {
   const user = c.get("user");
-  const classes = await listClassesWithStudentCount(user.id);
+  const classes = await listClassesWithStudentCount();
   const classId = c.req.query("classId")
     ? Number(c.req.query("classId"))
     : classes[0]?.id;

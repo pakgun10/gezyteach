@@ -40,12 +40,18 @@ export const sessions = sqliteTable("sessions", {
     .default(sql`(unixepoch('now') * 1000)`),
 });
 
-/** Kelas yang diampu guru. */
+/**
+ * Kelas sekolah. Data bersama, bisa dilihat & dipakai oleh semua guru
+ * (bukan milik eksklusif satu guru), karena satu kelas biasanya diajar oleh
+ * beberapa guru mapel berbeda.
+ * `createdByUserId` hanya mencatat siapa yang membuat kelas ini untuk audit,
+ * bukan pembatas akses. Null jika pembuatnya sudah dihapus dari sistem.
+ */
 export const classes = sqliteTable("classes", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  userId: integer("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
+  createdByUserId: integer("created_by_user_id").references(() => users.id, {
+    onDelete: "set null",
+  }),
   name: text("name").notNull(),
   level: text("level"),
   academicYear: text("academic_year"),
@@ -195,14 +201,17 @@ export const resources = sqliteTable("resources", {
 // ---------------------------------------------------------------------------
 
 export const usersRelations = relations(users, ({ many }) => ({
-  classes: many(classes),
+  createdClasses: many(classes),
   schedules: many(schedules),
   resources: many(resources),
   sessions: many(sessions),
 }));
 
 export const classesRelations = relations(classes, ({ one, many }) => ({
-  user: one(users, { fields: [classes.userId], references: [users.id] }),
+  createdBy: one(users, {
+    fields: [classes.createdByUserId],
+    references: [users.id],
+  }),
   students: many(students),
   schedules: many(schedules),
   assessmentPlans: many(assessmentPlans),

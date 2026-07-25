@@ -155,7 +155,7 @@ function SchedulePage({
 scheduleRoutes.get("/app/schedule", async (c) => {
   const user = c.get("user");
   const [classes, schedules] = await Promise.all([
-    listClassesWithStudentCount(user.id),
+    listClassesWithStudentCount(),
     listSchedulesByUser(user.id),
   ]);
 

@@ -1,10 +1,13 @@
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "../db";
-import { classes, students } from "../db/schema";
+import { classes } from "../db/schema";
 
-export async function listClassesWithStudentCount(userId: number) {
+/**
+ * Kelas adalah data bersama sekolah: semua guru bisa melihat & mengelola
+ * kelas dan siswanya, tidak dibatasi hanya milik pembuatnya.
+ */
+export async function listClassesWithStudentCount() {
   const rows = await db.query.classes.findMany({
-    where: (c, { eq }) => eq(c.userId, userId),
     orderBy: (c, { asc }) => asc(c.name),
     with: {
       students: true,
@@ -17,21 +20,20 @@ export async function listClassesWithStudentCount(userId: number) {
   }));
 }
 
-export async function getClassForUser(userId: number, classId: number) {
+export async function getClassById(classId: number) {
   return db.query.classes.findFirst({
-    where: (c, { eq, and: andFn }) =>
-      andFn(eq(c.id, classId), eq(c.userId, userId)),
+    where: (c, { eq: eqFn }) => eqFn(c.id, classId),
   });
 }
 
 export async function createClass(
-  userId: number,
+  createdByUserId: number,
   data: { name: string; level?: string; academicYear?: string },
 ) {
   const [created] = await db
     .insert(classes)
     .values({
-      userId,
+      createdByUserId,
       name: data.name,
       level: data.level || null,
       academicYear: data.academicYear || null,
@@ -41,8 +43,6 @@ export async function createClass(
   return created;
 }
 
-export async function deleteClass(userId: number, classId: number) {
-  await db
-    .delete(classes)
-    .where(and(eq(classes.id, classId), eq(classes.userId, userId)));
+export async function deleteClass(classId: number) {
+  await db.delete(classes).where(eq(classes.id, classId));
 }

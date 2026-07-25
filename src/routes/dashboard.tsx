@@ -21,7 +21,7 @@ const DAY_NAMES = [
 
 dashboardRoutes.get("/app", async (c) => {
   const user = c.get("user");
-  const classes = await listClassesWithStudentCount(user.id);
+  const classes = await listClassesWithStudentCount();
   const totalStudents = classes.reduce((sum, k) => sum + k.studentCount, 0);
   const today = new Date();
   const todayLabel = `${DAY_NAMES[today.getDay()]}, ${today.toLocaleDateString(

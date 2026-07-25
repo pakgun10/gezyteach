@@ -3,7 +3,7 @@ import type { SessionUser } from "../services/auth.service";
 import {
   createClass,
   deleteClass,
-  getClassForUser,
+  getClassById,
   listClassesWithStudentCount,
 } from "../services/class.service";
 import {
@@ -90,7 +90,7 @@ function ClassListPage({
 
 studentsRoutes.get("/app/students", async (c) => {
   const user = c.get("user");
-  const classes = await listClassesWithStudentCount(user.id);
+  const classes = await listClassesWithStudentCount();
   return c.html(<ClassListPage user={user} classes={classes} />);
 });
 
@@ -107,9 +107,8 @@ studentsRoutes.post("/app/students", async (c) => {
 });
 
 studentsRoutes.delete("/app/students/:classId", async (c) => {
-  const user = c.get("user");
   const classId = Number(c.req.param("classId"));
-  await deleteClass(user.id, classId);
+  await deleteClass(classId);
   c.header("HX-Redirect", "/app/students");
   return c.body(null);
 });
@@ -437,7 +436,7 @@ function ClassDetailPage({
 studentsRoutes.get("/app/students/:classId", async (c) => {
   const user = c.get("user");
   const classId = Number(c.req.param("classId"));
-  const klass = await getClassForUser(user.id, classId);
+  const klass = await getClassById(classId);
 
   if (!klass) {
     return c.redirect("/app/students");
@@ -455,7 +454,7 @@ studentsRoutes.post(
     const user = c.get("user");
     const classId = Number(c.req.param("classId"));
     const studentId = Number(c.req.param("studentId"));
-    const klass = await getClassForUser(user.id, classId);
+    const klass = await getClassById(classId);
     if (!klass) return c.redirect("/app/students");
 
     const students = await listStudentsByClass(classId);
@@ -502,7 +501,7 @@ studentsRoutes.post(
     const user = c.get("user");
     const classId = Number(c.req.param("classId"));
     const studentId = Number(c.req.param("studentId"));
-    const klass = await getClassForUser(user.id, classId);
+    const klass = await getClassById(classId);
     if (!klass) return c.redirect("/app/students");
 
     await disableStudentLogin(studentId);
@@ -514,7 +513,7 @@ studentsRoutes.post(
 studentsRoutes.post("/app/students/:classId/activate-all", async (c) => {
   const user = c.get("user");
   const classId = Number(c.req.param("classId"));
-  const klass = await getClassForUser(user.id, classId);
+  const klass = await getClassById(classId);
   if (!klass) return c.redirect("/app/students");
 
   const students = await listStudentsByClass(classId);
@@ -554,7 +553,7 @@ studentsRoutes.post("/app/students/:classId/activate-all", async (c) => {
 studentsRoutes.get("/app/students/:classId/export-logins.csv", async (c) => {
   const user = c.get("user");
   const classId = Number(c.req.param("classId"));
-  const klass = await getClassForUser(user.id, classId);
+  const klass = await getClassById(classId);
   if (!klass) return c.redirect("/app/students");
 
   const token = c.req.query("token") ?? "";
@@ -583,7 +582,7 @@ studentsRoutes.get("/app/students/:classId/export-logins.csv", async (c) => {
 studentsRoutes.post("/app/students/:classId", async (c) => {
   const user = c.get("user");
   const classId = Number(c.req.param("classId"));
-  const klass = await getClassForUser(user.id, classId);
+  const klass = await getClassById(classId);
   if (!klass) return c.redirect("/app/students");
 
   const body = await c.req.parseBody();
@@ -602,7 +601,7 @@ studentsRoutes.post("/app/students/:classId", async (c) => {
 studentsRoutes.post("/app/students/:classId/import", async (c) => {
   const user = c.get("user");
   const classId = Number(c.req.param("classId"));
-  const klass = await getClassForUser(user.id, classId);
+  const klass = await getClassById(classId);
   if (!klass) return c.redirect("/app/students");
 
   const body = await c.req.parseBody();
@@ -631,7 +630,7 @@ studentsRoutes.delete("/app/students/:classId/:studentId", async (c) => {
   const user = c.get("user");
   const classId = Number(c.req.param("classId"));
   const studentId = Number(c.req.param("studentId"));
-  const klass = await getClassForUser(user.id, classId);
+  const klass = await getClassById(classId);
 
   if (klass) {
     await deleteStudent(classId, studentId);
@@ -643,7 +642,7 @@ studentsRoutes.delete("/app/students/:classId/:studentId", async (c) => {
 studentsRoutes.post("/app/students/:classId/bulk-delete", async (c) => {
   const user = c.get("user");
   const classId = Number(c.req.param("classId"));
-  const klass = await getClassForUser(user.id, classId);
+  const klass = await getClassById(classId);
   if (!klass) return c.redirect("/app/students");
 
   const body = await c.req.parseBody({ all: true });
