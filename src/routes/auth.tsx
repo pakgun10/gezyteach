@@ -15,13 +15,9 @@ export const authRoutes = new Hono();
 authRoutes.get("/login", (c) => {
   return c.html(
     <Layout title="Masuk">
-      <div class="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-        <h1 class="text-xl font-semibold text-emerald-700 mb-1">
-          GezyTeach
-        </h1>
-        <p class="text-sm text-slate-500 mb-6">
-          Masuk untuk mengelola kelas Anda
-        </p>
+      <div class="gt-card w-full max-w-sm shadow-sm p-6">
+        <h1 class="gt-accent-text text-xl font-semibold mb-1">GezyTeach</h1>
+        <p class="gt-muted text-sm mb-6">Masuk untuk mengelola kelas Anda</p>
         <form method="post" action="/login">
           <FormInput
             label="Email"
@@ -36,10 +32,7 @@ authRoutes.get("/login", (c) => {
             type="password"
             required
           />
-          <button
-            type="submit"
-            class="w-full bg-emerald-600 text-white rounded-lg py-2.5 font-medium hover:bg-emerald-700 transition"
-          >
+          <button type="submit" class="gt-btn-primary w-full py-2.5 transition">
             Masuk
           </button>
         </form>
@@ -58,10 +51,8 @@ authRoutes.post("/login", async (c) => {
   if (!user) {
     return c.html(
       <Layout title="Masuk">
-        <div class="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-          <h1 class="text-xl font-semibold text-emerald-700 mb-1">
-            GezyTeach
-          </h1>
+        <div class="gt-card w-full max-w-sm shadow-sm p-6">
+          <h1 class="gt-accent-text text-xl font-semibold mb-1">GezyTeach</h1>
           <Alert variant="error">Email atau password salah.</Alert>
           <form method="post" action="/login">
             <FormInput
@@ -80,7 +71,7 @@ authRoutes.post("/login", async (c) => {
             />
             <button
               type="submit"
-              class="w-full bg-emerald-600 text-white rounded-lg py-2.5 font-medium hover:bg-emerald-700 transition"
+              class="gt-btn-primary w-full py-2.5 transition"
             >
               Masuk
             </button>

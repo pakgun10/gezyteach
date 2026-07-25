@@ -32,61 +32,41 @@ dashboardRoutes.get("/app", async (c) => {
   return c.html(
     <Layout title="Beranda" user={user} activeNav="dashboard">
       <h1 class="text-xl font-semibold mb-1">Halo, {user.name} 👋</h1>
-      <p class="text-sm text-slate-500 mb-6">{todayLabel}</p>
+      <p class="gt-muted text-sm mb-6">{todayLabel}</p>
 
       <div class="grid grid-cols-2 gap-3 mb-6">
-        <div class="bg-white rounded-2xl border border-slate-200 p-4">
-          <p class="text-2xl font-semibold text-emerald-700">
-            {classes.length}
-          </p>
-          <p class="text-sm text-slate-500">Kelas</p>
+        <div class="gt-card p-4">
+          <p class="gt-accent-text text-2xl font-semibold">{classes.length}</p>
+          <p class="gt-muted text-sm">Kelas</p>
         </div>
-        <div class="bg-white rounded-2xl border border-slate-200 p-4">
-          <p class="text-2xl font-semibold text-emerald-700">{totalStudents}</p>
-          <p class="text-sm text-slate-500">Siswa</p>
+        <div class="gt-card p-4">
+          <p class="gt-accent-text text-2xl font-semibold">{totalStudents}</p>
+          <p class="gt-muted text-sm">Siswa</p>
         </div>
       </div>
 
       <div class="grid grid-cols-2 gap-3">
-        <a
-          href="/app/schedule"
-          class="bg-white rounded-2xl border border-slate-200 p-4 text-center hover:border-emerald-300"
-        >
+        <a href="/app/schedule" class="gt-card gt-card-hover p-4 text-center">
           <span class="text-2xl">🗓️</span>
           <p class="text-sm font-medium mt-1">Jadwal</p>
         </a>
-        <a
-          href="/app/journal"
-          class="bg-white rounded-2xl border border-slate-200 p-4 text-center hover:border-emerald-300"
-        >
+        <a href="/app/journal" class="gt-card gt-card-hover p-4 text-center">
           <span class="text-2xl">📝</span>
           <p class="text-sm font-medium mt-1">Jurnal</p>
         </a>
-        <a
-          href="/app/attendance"
-          class="bg-white rounded-2xl border border-slate-200 p-4 text-center hover:border-emerald-300"
-        >
+        <a href="/app/attendance" class="gt-card gt-card-hover p-4 text-center">
           <span class="text-2xl">✅</span>
           <p class="text-sm font-medium mt-1">Absensi</p>
         </a>
-        <a
-          href="/app/scores"
-          class="bg-white rounded-2xl border border-slate-200 p-4 text-center hover:border-emerald-300"
-        >
+        <a href="/app/scores" class="gt-card gt-card-hover p-4 text-center">
           <span class="text-2xl">📊</span>
           <p class="text-sm font-medium mt-1">Nilai</p>
         </a>
-        <a
-          href="/app/students"
-          class="bg-white rounded-2xl border border-slate-200 p-4 text-center hover:border-emerald-300"
-        >
+        <a href="/app/students" class="gt-card gt-card-hover p-4 text-center">
           <span class="text-2xl">🎓</span>
           <p class="text-sm font-medium mt-1">Data Siswa</p>
         </a>
-        <a
-          href="/app/resources"
-          class="bg-white rounded-2xl border border-slate-200 p-4 text-center hover:border-emerald-300"
-        >
+        <a href="/app/resources" class="gt-card gt-card-hover p-4 text-center">
           <span class="text-2xl">📁</span>
           <p class="text-sm font-medium mt-1">Perangkat</p>
         </a>

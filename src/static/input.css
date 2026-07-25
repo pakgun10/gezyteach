@@ -1,1 +1,405 @@
 @import "tailwindcss";
+
+/* Aktifkan dark mode berbasis class `.dark` di <html> (bukan media query),
+   supaya preferensi dari localStorage meng-override preferensi sistem. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* --------------------------------------------------------------------------
+   Tema & utilitas kustom: Glassmorphism + glow
+   Dipakai bersama utility Tailwind biasa. Bekerja untuk light & dark mode.
+   -------------------------------------------------------------------------- */
+
+@layer base {
+    :root {
+        /* Surface dasar */
+        --gt-bg: 248 250 252; /* slate-50 */
+        --gt-surface: 255 255 255; /* white */
+        --gt-surface-strong: 255 255 255;
+        --gt-border: 226 232 240; /* slate-200 */
+        --gt-border-soft: 241 245 249; /* slate-100 */
+        --gt-text: 15 23 42; /* slate-900 */
+        --gt-text-muted: 100 116 139; /* slate-500 */
+        --gt-text-subtle: 148 163 184; /* slate-400 */
+        --gt-accent: 4 120 87; /* emerald-700 */
+        --gt-accent-soft: 209 250 229; /* emerald-50 */
+        --gt-glow: 16 185 129; /* emerald-500 */
+        --gt-ring: 16 185 129; /* emerald-500 */
+        --gt-glass-alpha: 0.7;
+        --gt-glass-blur: 12px;
+    }
+
+    .dark {
+        --gt-bg: 2 6 23; /* slate-950 */
+        --gt-surface: 15 23 42; /* slate-900 */
+        --gt-surface-strong: 15 23 42;
+        --gt-border: 51 65 85; /* slate-700 */
+        --gt-border-soft: 30 41 59; /* slate-800 */
+        --gt-text: 241 245 249; /* slate-100 */
+        --gt-text-muted: 148 163 184; /* slate-400 */
+        --gt-text-subtle: 100 116 139; /* slate-500 */
+        --gt-accent: 52 211 153; /* emerald-400 */
+        --gt-accent-soft: 6 78 59; /* emerald-900 */
+        --gt-glow: 52 211 153; /* emerald-400 */
+        --gt-ring: 52 211 153; /* emerald-400 */
+        --gt-glass-alpha: 0.6;
+        --gt-glass-blur: 16px;
+    }
+
+    html {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+        background-color: rgb(var(--gt-bg));
+        color: rgb(var(--gt-text));
+        transition:
+            background-color 0.3s ease,
+            color 0.3s ease;
+    }
+
+    /* Smooth transition untuk elemen yang ganti warna antar tema */
+    .gt-transition,
+    .gt-transition * {
+        transition:
+            background-color 0.3s ease,
+            border-color 0.3s ease,
+            color 0.3s ease,
+            box-shadow 0.3s ease,
+            backdrop-filter 0.3s ease;
+    }
+}
+
+@layer components {
+    /* Glass surface: dipakai untuk card, header, navbar, tabel */
+    .gt-glass {
+        background-color: rgb(var(--gt-surface) / var(--gt-glass-alpha));
+        backdrop-filter: blur(var(--gt-glass-blur)) saturate(180%);
+        -webkit-backdrop-filter: blur(var(--gt-glass-blur)) saturate(180%);
+        border: 1px solid rgb(var(--gt-border) / 0.6);
+    }
+    .dark .gt-glass {
+        background-color: rgb(var(--gt-surface) / var(--gt-glass-alpha));
+        border: 1px solid rgb(var(--gt-border) / 0.5);
+        box-shadow:
+            0 4px 30px rgba(0, 0, 0, 0.3),
+            inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+    }
+
+    /* Card standar aplikasi */
+    .gt-card {
+        background-color: rgb(var(--gt-surface));
+        border: 1px solid rgb(var(--gt-border));
+        border-radius: 1rem;
+    }
+    .dark .gt-card {
+        background-color: rgb(var(--gt-surface) / 0.7);
+        border: 1px solid rgb(var(--gt-border) / 0.6);
+        backdrop-filter: blur(12px) saturate(160%);
+        -webkit-backdrop-filter: blur(12px) saturate(160%);
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Card yang bisa di-hover (link ke fitur) */
+    .gt-card-hover {
+        transition:
+            border-color 0.25s ease,
+            box-shadow 0.25s ease,
+            transform 0.2s ease;
+    }
+    .gt-card-hover:hover {
+        border-color: rgb(var(--gt-glow) / 0.6);
+        box-shadow:
+            0 0 0 1px rgb(var(--gt-glow) / 0.2),
+            0 8px 30px rgb(var(--gt-glow) / 0.12);
+        transform: translateY(-1px);
+    }
+    .dark .gt-card-hover:hover {
+        box-shadow:
+            0 0 0 1px rgb(var(--gt-glow) / 0.35),
+            0 8px 30px rgb(var(--gt-glow) / 0.18);
+    }
+
+    /* Header & navbar sticky dengan efek glass */
+    .gt-header-glass {
+        background-color: rgb(var(--gt-surface) / 0.75);
+        backdrop-filter: blur(16px) saturate(180%);
+        -webkit-backdrop-filter: blur(16px) saturate(180%);
+        border-bottom: 1px solid rgb(var(--gt-border) / 0.6);
+    }
+    .dark .gt-header-glass {
+        background-color: rgb(var(--gt-surface) / 0.6);
+        border-bottom: 1px solid rgb(var(--gt-border) / 0.5);
+    }
+
+    .gt-nav-glass {
+        background-color: rgb(var(--gt-surface) / 0.8);
+        backdrop-filter: blur(16px) saturate(180%);
+        -webkit-backdrop-filter: blur(16px) saturate(180%);
+        border-top: 1px solid rgb(var(--gt-border) / 0.6);
+    }
+    .dark .gt-nav-glass {
+        background-color: rgb(var(--gt-surface) / 0.65);
+        border-top: 1px solid rgb(var(--gt-border) / 0.5);
+    }
+
+    /* Tombol primary dengan glow emerald */
+    .gt-btn-primary {
+        background-color: rgb(var(--gt-accent));
+        color: white;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition:
+            background-color 0.2s ease,
+            box-shadow 0.2s ease,
+            transform 0.1s ease;
+    }
+    .gt-btn-primary:hover {
+        background-color: rgb(var(--gt-accent) / 0.9);
+        box-shadow: 0 0 20px rgb(var(--gt-glow) / 0.4);
+    }
+    .gt-btn-primary:active {
+        transform: scale(0.98);
+    }
+    .dark .gt-btn-primary {
+        background-color: rgb(var(--gt-accent) / 0.9);
+        color: rgb(2 6 23);
+    }
+    .dark .gt-btn-primary:hover {
+        background-color: rgb(var(--gt-accent));
+        box-shadow: 0 0 24px rgb(var(--gt-glow) / 0.5);
+    }
+
+    /* Tombol danger (hapus massal, dll) */
+    .gt-btn-danger {
+        background-color: rgb(220 38 38);
+        color: white;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: background-color 0.2s ease;
+    }
+    .gt-btn-danger:hover {
+        background-color: rgb(185 28 28);
+    }
+    .dark .gt-btn-danger {
+        background-color: rgb(220 38 38 / 0.9);
+    }
+    .dark .gt-btn-danger:hover {
+        background-color: rgb(220 38 38);
+    }
+
+    /* Tombol sekunder (keluar, batal, dll) */
+    .gt-btn-secondary {
+        background-color: rgb(var(--gt-border-soft));
+        color: rgb(var(--gt-text));
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition:
+            background-color 0.2s ease,
+            border-color 0.2s ease;
+    }
+    .gt-btn-secondary:hover {
+        background-color: rgb(var(--gt-border));
+    }
+
+    /* Input & select dengan focus glow */
+    .gt-input {
+        width: 100%;
+        border-radius: 0.5rem;
+        border: 1px solid rgb(var(--gt-border));
+        background-color: rgb(var(--gt-surface));
+        color: rgb(var(--gt-text));
+        padding: 0.625rem 0.75rem;
+        font-size: 1rem;
+        transition:
+            border-color 0.2s ease,
+            box-shadow 0.2s ease,
+            background-color 0.2s ease;
+    }
+    .gt-input::placeholder {
+        color: rgb(var(--gt-text-subtle));
+    }
+    .gt-input:focus {
+        outline: none;
+        border-color: rgb(var(--gt-ring));
+        box-shadow:
+            0 0 0 3px rgb(var(--gt-ring) / 0.2),
+            0 0 16px rgb(var(--gt-glow) / 0.15);
+    }
+    .dark .gt-input {
+        background-color: rgb(var(--gt-surface) / 0.6);
+        border-color: rgb(var(--gt-border) / 0.7);
+    }
+    .dark .gt-input:focus {
+        box-shadow:
+            0 0 0 3px rgb(var(--gt-ring) / 0.25),
+            0 0 20px rgb(var(--gt-glow) / 0.25);
+    }
+
+    /* Label form */
+    .gt-label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: rgb(var(--gt-text-muted));
+        margin-bottom: 0.25rem;
+    }
+
+    /* Teks muted & subtle */
+    .gt-muted {
+        color: rgb(var(--gt-text-muted));
+    }
+    .gt-subtle {
+        color: rgb(var(--gt-text-subtle));
+    }
+
+    /* Tabel: header dan baris */
+    .gt-table-head {
+        background-color: rgb(var(--gt-border-soft) / 0.7);
+        color: rgb(var(--gt-text-muted));
+    }
+    .dark .gt-table-head {
+        background-color: rgb(var(--gt-surface) / 0.5);
+    }
+
+    /* Background solid untuk sel tabel sticky (tanpa border-radius/border,
+       beda dengan .gt-card yang untuk container). */
+    .gt-surface-solid {
+        background-color: rgb(var(--gt-surface));
+    }
+    .dark .gt-surface-solid {
+        background-color: rgb(var(--gt-surface) / 0.9);
+    }
+    .gt-table-row-border {
+        border-top: 1px solid rgb(var(--gt-border-soft));
+    }
+    .dark .gt-table-row-border {
+        border-top: 1px solid rgb(var(--gt-border) / 0.4);
+    }
+
+    /* Badge status (hadir/sakit/izin/alpa, aktif/nonaktif) */
+    .gt-badge-emerald {
+        background-color: rgb(var(--gt-accent-soft));
+        color: rgb(var(--gt-accent));
+    }
+    .dark .gt-badge-emerald {
+        background-color: rgb(var(--gt-accent) / 0.15);
+        color: rgb(var(--gt-glow));
+    }
+    .gt-badge-amber {
+        background-color: rgb(254 243 199);
+        color: rgb(180 83 9);
+    }
+    .dark .gt-badge-amber {
+        background-color: rgb(217 119 6 / 0.15);
+        color: rgb(251 191 36);
+    }
+    .gt-badge-blue {
+        background-color: rgb(219 234 254);
+        color: rgb(30 64 175);
+    }
+    .dark .gt-badge-blue {
+        background-color: rgb(59 130 246 / 0.15);
+        color: rgb(96 165 250);
+    }
+    .gt-badge-red {
+        background-color: rgb(254 226 226);
+        color: rgb(153 27 27);
+    }
+    .dark .gt-badge-red {
+        background-color: rgb(239 68 68 / 0.15);
+        color: rgb(248 113 113);
+    }
+    .gt-badge-slate {
+        background-color: rgb(var(--gt-border-soft));
+        color: rgb(var(--gt-text-muted));
+    }
+    .dark .gt-badge-slate {
+        background-color: rgb(var(--gt-border) / 0.3);
+        color: rgb(var(--gt-text-muted));
+    }
+
+    /* Link tombol kecil (Buka, Aktifkan, Hapus) */
+    .gt-link-emerald {
+        color: rgb(var(--gt-accent));
+        transition: text-shadow 0.2s ease;
+    }
+    .gt-link-emerald:hover {
+        text-shadow: 0 0 12px rgb(var(--gt-glow) / 0.5);
+    }
+    .gt-link-red {
+        color: rgb(220 38 38);
+        transition: text-shadow 0.2s ease;
+    }
+    .dark .gt-link-red {
+        color: rgb(248 113 113);
+    }
+    .gt-link-red:hover {
+        text-shadow: 0 0 12px rgb(239 68 68 / 0.5);
+    }
+    .gt-link-muted {
+        color: rgb(var(--gt-text-muted));
+        transition: color 0.2s ease;
+    }
+    .gt-link-muted:hover {
+        color: rgb(var(--gt-text));
+    }
+
+    /* Accent text (judul brand, angka statistik) */
+    .gt-accent-text {
+        color: rgb(var(--gt-accent));
+    }
+    .dark .gt-accent-text {
+        text-shadow: 0 0 18px rgb(var(--gt-glow) / 0.4);
+    }
+
+    /* Checkbox & radio agar kontras di dark */
+    .gt-checkbox {
+        accent-color: rgb(var(--gt-accent));
+    }
+
+    /* Toggle switch untuk theme */
+    .gt-theme-toggle {
+        position: relative;
+        width: 48px;
+        height: 26px;
+        border-radius: 9999px;
+        background-color: rgb(var(--gt-border));
+        border: 1px solid rgb(var(--gt-border));
+        cursor: pointer;
+        transition:
+            background-color 0.3s ease,
+            border-color 0.3s ease;
+        flex-shrink: 0;
+    }
+    .gt-theme-toggle::after {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 20px;
+        height: 20px;
+        border-radius: 9999px;
+        background-color: white;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .dark .gt-theme-toggle {
+        background-color: rgb(var(--gt-accent) / 0.4);
+        border-color: rgb(var(--gt-accent) / 0.5);
+    }
+    .dark .gt-theme-toggle::after {
+        transform: translateX(22px);
+        background-color: rgb(var(--gt-glow));
+        box-shadow: 0 0 12px rgb(var(--gt-glow) / 0.6);
+    }
+}
+
+@layer utilities {
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+}

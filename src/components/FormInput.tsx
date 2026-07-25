@@ -21,9 +21,7 @@ export const FormInput: FC<FormInputProps> = ({
 }) => {
   return (
     <label class="block mb-4">
-      <span class="block text-sm font-medium text-slate-700 mb-1">
-        {label}
-      </span>
+      <span class="gt-label">{label}</span>
       <input
         type={type}
         name={name}
@@ -31,7 +29,7 @@ export const FormInput: FC<FormInputProps> = ({
         placeholder={placeholder}
         required={required}
         autofocus={autofocus}
-        class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+        class="gt-input"
       />
     </label>
   );

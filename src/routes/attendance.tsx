@@ -52,13 +52,9 @@ attendanceRoutes.get("/app/attendance", async (c) => {
       <form
         method="get"
         action="/app/attendance"
-        class="bg-white rounded-2xl border border-slate-200 p-4 mb-4 grid grid-cols-1 sm:grid-cols-2 gap-2"
+        class="gt-card p-4 mb-4 grid grid-cols-1 sm:grid-cols-2 gap-2"
       >
-        <select
-          name="scheduleId"
-          required
-          class="rounded-lg border border-slate-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500"
-        >
+        <select name="scheduleId" required class="gt-input">
           <option value="">Pilih kelas & mapel</option>
           {schedules.map((s) => (
             <option value={s.id} selected={s.id === scheduleId}>
@@ -66,39 +62,31 @@ attendanceRoutes.get("/app/attendance", async (c) => {
             </option>
           ))}
         </select>
-        <input
-          type="date"
-          name="date"
-          value={date}
-          class="rounded-lg border border-slate-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500"
-        />
-        <button
-          type="submit"
-          class="sm:col-span-2 bg-emerald-600 text-white rounded-lg py-2 font-medium hover:bg-emerald-700"
-        >
+        <input type="date" name="date" value={date} class="gt-input" />
+        <button type="submit" class="gt-btn-primary sm:col-span-2 py-2">
           Tampilkan
         </button>
       </form>
 
       {schedules.length === 0 && (
-        <p class="text-sm text-slate-500 text-center py-8">
+        <p class="gt-muted text-sm text-center py-8">
           Belum ada jadwal. Tambahkan jadwal di menu Jadwal terlebih dahulu.
         </p>
       )}
 
       {selectedSchedule && (
-        <div class="bg-white rounded-2xl border border-slate-200 p-4">
+        <div class="gt-card p-4">
           <div class="flex items-center justify-between mb-3">
             <div>
               <p class="font-medium">
                 {selectedSchedule.class.name} · {selectedSchedule.subject}
               </p>
-              <p class="text-sm text-slate-500">{formatDateLabel(date)}</p>
+              <p class="gt-muted text-sm">{formatDateLabel(date)}</p>
             </div>
             <button
               type="button"
               onclick="document.querySelectorAll('select[name^=status]').forEach(s => s.value = 'H')"
-              class="text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 shrink-0"
+              class="gt-btn-secondary text-xs px-3 py-1.5 shrink-0"
             >
               Semua Hadir
             </button>
@@ -110,18 +98,18 @@ attendanceRoutes.get("/app/attendance", async (c) => {
           >
             <div class="space-y-2">
               {attendanceList.map((item) => (
-                <div class="flex items-center justify-between gap-2 border-b border-slate-100 pb-2 last:border-0">
+                <div class="gt-table-row-border flex items-center justify-between gap-2 pb-2 last:border-0">
                   <div class="min-w-0">
                     <p class="text-sm font-medium truncate">
                       {item.student.name}
                     </p>
                     {item.student.nis && (
-                      <p class="text-xs text-slate-400">{item.student.nis}</p>
+                      <p class="gt-subtle text-xs">{item.student.nis}</p>
                     )}
                   </div>
                   <select
                     name={`status_${item.student.id}`}
-                    class="rounded-lg border border-slate-300 px-2 py-1.5 text-sm shrink-0"
+                    class="gt-input text-sm py-1.5 shrink-0 w-auto"
                   >
                     {(["H", "S", "I", "A"] as AttendanceStatus[]).map(
                       (status) => (
@@ -139,16 +127,13 @@ attendanceRoutes.get("/app/attendance", async (c) => {
             </div>
 
             {attendanceList.length === 0 && (
-              <p class="text-sm text-slate-500 text-center py-6">
+              <p class="gt-muted text-sm text-center py-6">
                 Belum ada siswa di kelas ini.
               </p>
             )}
 
             {attendanceList.length > 0 && (
-              <button
-                type="submit"
-                class="w-full mt-4 bg-emerald-600 text-white rounded-lg py-2.5 font-medium hover:bg-emerald-700"
-              >
+              <button type="submit" class="gt-btn-primary w-full mt-4 py-2.5">
                 Simpan Absensi
               </button>
             )}
