@@ -92,6 +92,15 @@ function ProfilePage({
           </button>
         </form>
       </div>
+
+      <form method="post" action="/logout">
+        <button
+          type="submit"
+          class="w-full mt-4 bg-slate-100 text-slate-700 rounded-lg py-2.5 font-medium hover:bg-slate-200 transition"
+        >
+          Keluar
+        </button>
+      </form>
     </Layout>
   );
 }
