@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import Papa from "papaparse";
 import { db } from "../db";
 import { students } from "../db/schema";
@@ -49,6 +49,21 @@ export async function deleteStudent(classId: number, studentId: number) {
   await db
     .delete(students)
     .where(and(eq(students.id, studentId), eq(students.classId, classId)));
+}
+
+/**
+ * Hapus banyak siswa sekaligus dalam satu kelas (bulk delete).
+ * Tetap di-scope ke `classId` supaya tidak bisa menghapus siswa kelas lain.
+ */
+export async function deleteStudents(classId: number, studentIds: number[]) {
+  if (studentIds.length === 0) return 0;
+
+  const result = await db
+    .delete(students)
+    .where(and(eq(students.classId, classId), inArray(students.id, studentIds)))
+    .returning();
+
+  return result.length;
 }
 
 export type ImportResult = {
