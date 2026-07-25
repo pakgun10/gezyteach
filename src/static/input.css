@@ -88,11 +88,13 @@
     /* Card standar aplikasi */
     .gt-card {
         background-color: rgb(var(--gt-surface));
+        color: rgb(var(--gt-text));
         border: 1px solid rgb(var(--gt-border));
         border-radius: 1rem;
     }
     .dark .gt-card {
         background-color: rgb(var(--gt-surface) / 0.7);
+        color: rgb(var(--gt-text));
         border: 1px solid rgb(var(--gt-border) / 0.6);
         backdrop-filter: blur(12px) saturate(160%);
         -webkit-backdrop-filter: blur(12px) saturate(160%);
@@ -282,6 +284,7 @@
        beda dengan .gt-card yang untuk container). */
     .gt-surface-solid {
         background-color: rgb(var(--gt-surface));
+        color: rgb(var(--gt-text));
     }
     .dark .gt-surface-solid {
         background-color: rgb(15 23 42);
@@ -289,10 +292,12 @@
     }
     .gt-table-row-border {
         border-top: 1px solid rgb(var(--gt-border-soft));
+        color: rgb(var(--gt-text));
         transition: background-color 0.15s ease;
     }
     .dark .gt-table-row-border {
         border-top: 1px solid rgb(var(--gt-border) / 0.5);
+        color: rgb(var(--gt-text));
     }
     .gt-table-row-border:hover {
         background-color: rgb(var(--gt-border-soft) / 0.4);
