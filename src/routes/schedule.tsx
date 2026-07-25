@@ -33,12 +33,12 @@ function SchedulePage({
     <Layout title="Jadwal" user={user} activeNav="schedule">
       <h1 class="text-xl font-semibold mb-4">Jadwal Mengajar</h1>
 
-      <div class="bg-white rounded-2xl border border-slate-200 p-4 mb-4">
+      <div class="gt-card p-4 mb-4">
         <h2 class="font-medium mb-3">Tambah Jadwal</h2>
         {classes.length === 0 ? (
-          <p class="text-sm text-slate-500">
+          <p class="gt-muted text-sm">
             Tambahkan kelas terlebih dahulu di menu{" "}
-            <a href="/app/students" class="text-emerald-700 underline">
+            <a href="/app/students" class="gt-link-emerald underline">
               Data Siswa
             </a>{" "}
             sebelum membuat jadwal.
@@ -49,11 +49,7 @@ function SchedulePage({
             action="/app/schedule"
             class="grid grid-cols-1 sm:grid-cols-2 gap-2"
           >
-            <select
-              name="classId"
-              required
-              class="rounded-lg border border-slate-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            >
+            <select name="classId" required class="gt-input">
               <option value="">Pilih kelas</option>
               {classes.map((k) => (
                 <option value={k.id}>{k.name}</option>
@@ -64,13 +60,9 @@ function SchedulePage({
               name="subject"
               placeholder="Mata pelajaran"
               required
-              class="rounded-lg border border-slate-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              class="gt-input"
             />
-            <select
-              name="dayOfWeek"
-              required
-              class="rounded-lg border border-slate-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            >
+            <select name="dayOfWeek" required class="gt-input">
               <option value="">Pilih hari</option>
               {dayOrder.map((d) => (
                 <option value={d}>{DAY_NAMES[d]}</option>
@@ -80,24 +72,11 @@ function SchedulePage({
               type="text"
               name="room"
               placeholder="Ruang (opsional)"
-              class="rounded-lg border border-slate-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              class="gt-input"
             />
-            <input
-              type="time"
-              name="startTime"
-              required
-              class="rounded-lg border border-slate-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-            <input
-              type="time"
-              name="endTime"
-              required
-              class="rounded-lg border border-slate-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-            <button
-              type="submit"
-              class="sm:col-span-2 bg-emerald-600 text-white rounded-lg py-2 font-medium hover:bg-emerald-700"
-            >
+            <input type="time" name="startTime" required class="gt-input" />
+            <input type="time" name="endTime" required class="gt-input" />
+            <button type="submit" class="gt-btn-primary sm:col-span-2 py-2">
               Tambah Jadwal
             </button>
           </form>
@@ -111,17 +90,17 @@ function SchedulePage({
 
           return (
             <div>
-              <h3 class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wide">
+              <h3 class="gt-muted text-sm font-semibold mb-2 uppercase tracking-wide">
                 {DAY_NAMES[day]}
               </h3>
               <div class="space-y-2">
                 {items.map((s) => (
-                  <div class="bg-white rounded-xl border border-slate-200 p-3 flex items-center justify-between">
+                  <div class="gt-card p-3 flex items-center justify-between">
                     <div>
                       <p class="font-medium">
                         {s.subject} · {s.class.name}
                       </p>
-                      <p class="text-sm text-slate-500">
+                      <p class="gt-muted text-sm">
                         {s.startTime}–{s.endTime}
                         {s.room ? ` · ${s.room}` : ""}
                       </p>
@@ -129,9 +108,9 @@ function SchedulePage({
                     <button
                       hx-delete={`/app/schedule/${s.id}`}
                       hx-confirm="Hapus jadwal ini?"
-                      hx-target="closest div.bg-white"
+                      hx-target="closest div.gt-card"
                       hx-swap="outerHTML"
-                      class="text-red-600 text-xs font-medium shrink-0 ml-2"
+                      class="gt-link-red text-xs font-medium shrink-0 ml-2"
                     >
                       Hapus
                     </button>
@@ -143,7 +122,7 @@ function SchedulePage({
         })}
 
         {schedulesByDay.size === 0 && (
-          <p class="text-sm text-slate-500 text-center py-8">
+          <p class="gt-muted text-sm text-center py-8">
             Belum ada jadwal. Tambahkan jadwal pertama Anda di atas.
           </p>
         )}

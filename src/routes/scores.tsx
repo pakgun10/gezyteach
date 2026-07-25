@@ -41,24 +41,16 @@ scoresRoutes.get("/app/scores", async (c) => {
       <form
         method="get"
         action="/app/scores"
-        class="bg-white rounded-2xl border border-slate-200 p-4 mb-4 grid grid-cols-1 sm:grid-cols-2 gap-2"
+        class="gt-card p-4 mb-4 grid grid-cols-1 sm:grid-cols-2 gap-2"
       >
-        <select
-          name="classId"
-          onchange="this.form.submit()"
-          class="rounded-lg border border-slate-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500"
-        >
+        <select name="classId" onchange="this.form.submit()" class="gt-input">
           {classes.map((k) => (
             <option value={k.id} selected={k.id === classId}>
               {k.name}
             </option>
           ))}
         </select>
-        <select
-          name="subject"
-          onchange="this.form.submit()"
-          class="rounded-lg border border-slate-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500"
-        >
+        <select name="subject" onchange="this.form.submit()" class="gt-input">
           {subjects.length === 0 && <option value="">Belum ada mapel</option>}
           {subjects.map((s) => (
             <option value={s} selected={s === subject}>
@@ -69,13 +61,13 @@ scoresRoutes.get("/app/scores", async (c) => {
       </form>
 
       {classes.length === 0 && (
-        <p class="text-sm text-slate-500 text-center py-8">
+        <p class="gt-muted text-sm text-center py-8">
           Tambahkan kelas dan siswa terlebih dahulu.
         </p>
       )}
 
       {selectedClass && subjects.length === 0 && (
-        <p class="text-sm text-slate-500 text-center py-8">
+        <p class="gt-muted text-sm text-center py-8">
           Belum ada mata pelajaran. Tambahkan jadwal terlebih dahulu di menu
           Jadwal agar mapel tersedia di sini.
         </p>
@@ -83,7 +75,7 @@ scoresRoutes.get("/app/scores", async (c) => {
 
       {selectedClass && subject && (
         <>
-          <div class="bg-white rounded-2xl border border-slate-200 p-4 mb-4">
+          <div class="gt-card p-4 mb-4">
             <h2 class="font-medium mb-3">Rencana Komponen Nilai</h2>
             <form
               method="post"
@@ -97,7 +89,7 @@ scoresRoutes.get("/app/scores", async (c) => {
                 name="name"
                 placeholder="Nama komponen (UH, Tugas, dst)"
                 required
-                class="sm:col-span-2 rounded-lg border border-slate-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                class="gt-input sm:col-span-2"
               />
               <input
                 type="number"
@@ -107,19 +99,16 @@ scoresRoutes.get("/app/scores", async (c) => {
                 step="0.1"
                 required
                 value="1"
-                class="rounded-lg border border-slate-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                class="gt-input"
               />
-              <button
-                type="submit"
-                class="bg-emerald-600 text-white rounded-lg py-2 font-medium hover:bg-emerald-700"
-              >
+              <button type="submit" class="gt-btn-primary py-2">
                 Tambah
               </button>
             </form>
 
             <div class="flex flex-wrap gap-2">
               {plans.map((plan) => (
-                <span class="inline-flex items-center gap-1.5 bg-slate-100 text-slate-700 text-sm rounded-full px-3 py-1">
+                <span class="gt-badge-slate inline-flex items-center gap-1.5 text-sm rounded-full px-3 py-1">
                   {plan.name} (bobot {plan.weight})
                   <button
                     hx-delete={`/app/scores/plans/${plan.id}?classId=${selectedClass.id}&subject=${encodeURIComponent(
@@ -127,14 +116,14 @@ scoresRoutes.get("/app/scores", async (c) => {
                     )}`}
                     hx-confirm={`Hapus komponen "${plan.name}"? Semua nilai pada komponen ini akan ikut terhapus.`}
                     hx-target="body"
-                    class="text-slate-400 hover:text-red-600"
+                    class="gt-link-muted"
                   >
                     ×
                   </button>
                 </span>
               ))}
               {plans.length === 0 && (
-                <p class="text-sm text-slate-400">
+                <p class="gt-subtle text-sm">
                   Belum ada komponen nilai untuk mapel ini.
                 </p>
               )}
@@ -142,7 +131,7 @@ scoresRoutes.get("/app/scores", async (c) => {
           </div>
 
           {plans.length > 0 && (
-            <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto">
+            <div class="gt-card overflow-x-auto">
               <form
                 method="post"
                 action={`/app/scores/entry?classId=${selectedClass.id}&subject=${encodeURIComponent(
@@ -150,9 +139,9 @@ scoresRoutes.get("/app/scores", async (c) => {
                 )}`}
               >
                 <table class="w-full text-sm">
-                  <thead class="bg-slate-50 text-slate-500">
+                  <thead class="gt-table-head">
                     <tr>
-                      <th class="text-left px-3 py-2 sticky left-0 bg-slate-50">
+                      <th class="gt-table-head text-left px-3 py-2 sticky left-0">
                         Nama
                       </th>
                       {plans.map((plan) => (
@@ -165,8 +154,8 @@ scoresRoutes.get("/app/scores", async (c) => {
                   </thead>
                   <tbody>
                     {rows.map((row) => (
-                      <tr class="border-t border-slate-100">
-                        <td class="px-3 py-2 sticky left-0 bg-white whitespace-nowrap">
+                      <tr class="gt-table-row-border">
+                        <td class="gt-surface-solid px-3 py-2 sticky left-0 whitespace-nowrap">
                           {row.student.name}
                         </td>
                         {plans.map((plan) => (
@@ -178,7 +167,7 @@ scoresRoutes.get("/app/scores", async (c) => {
                               max="100"
                               step="0.1"
                               value={row.values[plan.id] ?? ""}
-                              class="w-16 rounded-lg border border-slate-300 px-2 py-1 text-center focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                              class="gt-input text-center py-1 px-2 w-16"
                             />
                           </td>
                         ))}
@@ -193,7 +182,7 @@ scoresRoutes.get("/app/scores", async (c) => {
                       <tr>
                         <td
                           colspan={plans.length + 2}
-                          class="px-3 py-6 text-center text-slate-400"
+                          class="px-3 py-6 text-center gt-subtle"
                         >
                           Belum ada siswa di kelas ini.
                         </td>
@@ -203,10 +192,7 @@ scoresRoutes.get("/app/scores", async (c) => {
                 </table>
                 {rows.length > 0 && (
                   <div class="p-3">
-                    <button
-                      type="submit"
-                      class="w-full bg-emerald-600 text-white rounded-lg py-2.5 font-medium hover:bg-emerald-700"
-                    >
+                    <button type="submit" class="gt-btn-primary w-full py-2.5">
                       Simpan Nilai
                     </button>
                   </div>

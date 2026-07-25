@@ -17,16 +17,14 @@ const NAV_ITEMS = [
 
 export const Navbar: FC<{ active?: string }> = ({ active }) => {
   return (
-    <nav class="fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 z-10">
+    <nav class="gt-nav-glass fixed bottom-0 inset-x-0 z-10">
       <ul class="flex overflow-x-auto no-scrollbar">
         {NAV_ITEMS.map((item) => (
-          <li class="flex-1 min-w-[64px]">
+          <li class="flex-1 min-w-16">
             <a
               href={item.href}
-              class={`flex flex-col items-center justify-center gap-0.5 py-2 text-[11px] ${
-                active === item.key
-                  ? "text-emerald-700 font-medium"
-                  : "text-slate-500"
+              class={`flex flex-col items-center justify-center gap-0.5 py-2 text-[11px] transition-colors ${
+                active === item.key ? "gt-accent-text font-medium" : "gt-muted"
               }`}
             >
               <span class="text-lg leading-none">{item.icon}</span>

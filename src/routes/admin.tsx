@@ -38,7 +38,7 @@ function AdminUsersPage({
   return (
     <Layout title="Kelola User" user={currentUser}>
       <div class="flex items-center gap-2 mb-4">
-        <a href="/app" class="text-slate-400">
+        <a href="/app" class="gt-subtle">
           ‹
         </a>
         <h1 class="text-xl font-semibold">Kelola User</h1>
@@ -51,7 +51,7 @@ function AdminUsersPage({
         </Alert>
       )}
 
-      <div class="bg-white rounded-2xl border border-slate-200 p-4 mb-4">
+      <div class="gt-card p-4 mb-4">
         <h2 class="font-medium mb-3">Tambah User</h2>
         <form
           method="post"
@@ -63,33 +63,27 @@ function AdminUsersPage({
             name="name"
             placeholder="Nama"
             required
-            class="rounded-lg border border-slate-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            class="gt-input"
           />
           <input
             type="email"
             name="email"
             placeholder="Email"
             required
-            class="rounded-lg border border-slate-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            class="gt-input"
           />
           <input
             type="password"
             name="password"
             placeholder="Password (min. 8 karakter)"
             required
-            class="rounded-lg border border-slate-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            class="gt-input"
           />
-          <select
-            name="role"
-            class="rounded-lg border border-slate-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          >
+          <select name="role" class="gt-input">
             <option value="guru">Guru</option>
             <option value="admin">Admin</option>
           </select>
-          <button
-            type="submit"
-            class="sm:col-span-2 bg-emerald-600 text-white rounded-lg py-2 font-medium hover:bg-emerald-700"
-          >
+          <button type="submit" class="gt-btn-primary sm:col-span-2 py-2">
             Tambah User
           </button>
         </form>
@@ -97,7 +91,7 @@ function AdminUsersPage({
 
       <div class="space-y-3">
         {users.map((u) => (
-          <div class="bg-white rounded-2xl border border-slate-200 p-4">
+          <div class="gt-card p-4">
             <form
               method="post"
               action={`/app/admin/users/${u.id}`}
@@ -107,18 +101,18 @@ function AdminUsersPage({
                 type="text"
                 name="name"
                 value={u.name}
-                class="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                class="gt-input text-sm py-2"
               />
               <input
                 type="email"
                 name="email"
                 value={u.email}
-                class="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                class="gt-input text-sm py-2"
               />
               <select
                 name="role"
                 disabled={u.id === currentUser.id}
-                class="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                class="gt-input text-sm py-2"
               >
                 <option value="guru" selected={u.role === "guru"}>
                   Guru
@@ -129,13 +123,13 @@ function AdminUsersPage({
               </select>
               <button
                 type="submit"
-                class="sm:col-span-3 text-sm font-medium px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 self-start"
+                class="gt-btn-secondary sm:col-span-3 text-sm px-3 py-1.5 self-start"
               >
                 Simpan Perubahan
               </button>
             </form>
 
-            <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
+            <div class="gt-table-row-border flex flex-wrap items-center gap-2 pt-2">
               <form
                 method="post"
                 action={`/app/admin/users/${u.id}/reset-password`}
@@ -146,11 +140,11 @@ function AdminUsersPage({
                   name="newPassword"
                   placeholder="Password baru (min. 8)"
                   required
-                  class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm w-44"
+                  class="gt-input text-sm py-1.5 w-44"
                 />
                 <button
                   type="submit"
-                  class="text-xs font-medium px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700"
+                  class="gt-badge-amber text-xs font-medium px-3 py-1.5 rounded-lg"
                 >
                   Reset Password
                 </button>
@@ -160,15 +154,13 @@ function AdminUsersPage({
                   hx-delete={`/app/admin/users/${u.id}`}
                   hx-confirm={`Hapus user "${u.name}"? Semua data (kelas, siswa, jadwal, dst) milik user ini akan ikut terhapus.`}
                   hx-target="body"
-                  class="text-xs font-medium px-3 py-1.5 rounded-lg bg-red-50 text-red-600 ml-auto"
+                  class="gt-badge-red text-xs font-medium px-3 py-1.5 rounded-lg ml-auto"
                 >
                   Hapus User
                 </button>
               )}
               {u.id === currentUser.id && (
-                <span class="text-xs text-slate-400 ml-auto">
-                  Ini akun Anda
-                </span>
+                <span class="gt-subtle text-xs ml-auto">Ini akun Anda</span>
               )}
             </div>
           </div>

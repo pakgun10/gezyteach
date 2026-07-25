@@ -1,5 +1,6 @@
 import type { FC } from "hono/jsx";
 import type { SessionStudent } from "../services/student-auth.service";
+import { ThemeInitScript, ThemeToggle } from "./ThemeToggle";
 
 const NAV_ITEMS = [
   { key: "dashboard", label: "Beranda", href: "/siswa", icon: "🏠" },
@@ -27,31 +28,35 @@ export const StudentLayout: FC<StudentLayoutProps> = ({
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>{title} · GezyTeach Siswa</title>
+        <ThemeInitScript />
         <link rel="stylesheet" href="/static/style.css" />
         <script src="/vendor/htmx.min.js" defer />
       </head>
-      <body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
-        <header class="bg-white border-b border-slate-200 sticky top-0 z-10 px-4 py-3 flex items-center justify-between">
-          <span class="font-semibold text-lg text-emerald-700">
+      <body class="gt-transition min-h-screen flex flex-col">
+        <header class="gt-header-glass sticky top-0 z-10 px-4 py-3 flex items-center justify-between">
+          <span class="gt-accent-text font-semibold text-lg">
             GezyTeach Siswa
           </span>
-          <span class="text-sm text-slate-500 truncate max-w-[45%]">
-            {student.name}
-          </span>
+          <div class="flex items-center gap-3">
+            <ThemeToggle />
+            <span class="gt-muted text-sm truncate max-w-[35%]">
+              {student.name}
+            </span>
+          </div>
         </header>
         <main class="flex-1 px-4 py-4 pb-24 max-w-3xl w-full mx-auto">
           {children}
         </main>
-        <nav class="fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 z-10">
+        <nav class="gt-nav-glass fixed bottom-0 inset-x-0 z-10">
           <ul class="flex overflow-x-auto no-scrollbar">
             {NAV_ITEMS.map((item) => (
-              <li class="flex-1 min-w-[64px]">
+              <li class="flex-1 min-w-16">
                 <a
                   href={item.href}
-                  class={`flex flex-col items-center justify-center gap-0.5 py-2 text-[11px] ${
+                  class={`flex flex-col items-center justify-center gap-0.5 py-2 text-[11px] transition-colors ${
                     activeNav === item.key
-                      ? "text-emerald-700 font-medium"
-                      : "text-slate-500"
+                      ? "gt-accent-text font-medium"
+                      : "gt-muted"
                   }`}
                 >
                   <span class="text-lg leading-none">{item.icon}</span>

@@ -31,18 +31,14 @@ resourcesRoutes.get("/app/resources", async (c) => {
     <Layout title="Perangkat KBM" user={user} activeNav="resources">
       <h1 class="text-xl font-semibold mb-4">Perangkat KBM</h1>
 
-      <div class="bg-white rounded-2xl border border-slate-200 p-4 mb-4">
+      <div class="gt-card p-4 mb-4">
         <h2 class="font-medium mb-3">Tambah Perangkat</h2>
         <form
           method="post"
           action="/app/resources"
           class="grid grid-cols-1 sm:grid-cols-2 gap-2"
         >
-          <select
-            name="category"
-            required
-            class="rounded-lg border border-slate-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          >
+          <select name="category" required class="gt-input">
             {RESOURCE_CATEGORIES.map((cat) => (
               <option value={cat}>{cat}</option>
             ))}
@@ -52,25 +48,22 @@ resourcesRoutes.get("/app/resources", async (c) => {
             name="title"
             placeholder="Judul perangkat"
             required
-            class="rounded-lg border border-slate-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            class="gt-input"
           />
           <input
             type="url"
             name="url"
             placeholder="Tautan Google Drive"
             required
-            class="sm:col-span-2 rounded-lg border border-slate-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            class="gt-input sm:col-span-2"
           />
           <input
             type="text"
             name="description"
             placeholder="Deskripsi (opsional)"
-            class="sm:col-span-2 rounded-lg border border-slate-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            class="gt-input sm:col-span-2"
           />
-          <button
-            type="submit"
-            class="sm:col-span-2 bg-emerald-600 text-white rounded-lg py-2 font-medium hover:bg-emerald-700"
-          >
+          <button type="submit" class="gt-btn-primary sm:col-span-2 py-2">
             Tambah
           </button>
         </form>
@@ -83,12 +76,12 @@ resourcesRoutes.get("/app/resources", async (c) => {
 
           return (
             <div>
-              <h3 class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wide">
+              <h3 class="gt-muted text-sm font-semibold mb-2 uppercase tracking-wide">
                 {category}
               </h3>
               <div class="space-y-2">
                 {categoryItems.map((item) => (
-                  <div class="bg-white rounded-xl border border-slate-200 p-3 flex items-center justify-between gap-2">
+                  <div class="gt-card p-3 flex items-center justify-between gap-2">
                     <a
                       href={item.url}
                       target="_blank"
@@ -97,7 +90,7 @@ resourcesRoutes.get("/app/resources", async (c) => {
                     >
                       <p class="font-medium truncate">{item.title}</p>
                       {item.description && (
-                        <p class="text-sm text-slate-500 truncate">
+                        <p class="gt-muted text-sm truncate">
                           {item.description}
                         </p>
                       )}
@@ -107,16 +100,16 @@ resourcesRoutes.get("/app/resources", async (c) => {
                         href={item.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="text-emerald-700 text-xs font-medium px-2 py-1.5 rounded-lg bg-emerald-50"
+                        class="gt-badge-emerald text-xs font-medium px-2 py-1.5 rounded-lg"
                       >
                         Buka
                       </a>
                       <button
                         hx-delete={`/app/resources/${item.id}`}
                         hx-confirm={`Hapus perangkat "${item.title}"?`}
-                        hx-target="closest div.bg-white"
+                        hx-target="closest div.gt-card"
                         hx-swap="outerHTML"
-                        class="text-red-600 text-xs font-medium"
+                        class="gt-link-red text-xs font-medium"
                       >
                         Hapus
                       </button>
@@ -129,9 +122,9 @@ resourcesRoutes.get("/app/resources", async (c) => {
         })}
 
         {items.length === 0 && (
-          <p class="text-sm text-slate-500 text-center py-8">
-            Belum ada perangkat KBM. Tambahkan tautan Google Drive pertama
-            Anda di atas.
+          <p class="gt-muted text-sm text-center py-8">
+            Belum ada perangkat KBM. Tambahkan tautan Google Drive pertama Anda
+            di atas.
           </p>
         )}
       </div>

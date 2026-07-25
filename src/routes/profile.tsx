@@ -23,34 +23,31 @@ function ProfilePage({
   return (
     <Layout title="Profil" user={user}>
       <div class="flex items-center gap-2 mb-4">
-        <a href="/app" class="text-slate-400">
+        <a href="/app" class="gt-subtle">
           ‹
         </a>
         <h1 class="text-xl font-semibold">Profil & Ganti Password</h1>
       </div>
 
-      <div class="bg-white rounded-2xl border border-slate-200 p-4 mb-4">
-        <p class="text-sm text-slate-500">Nama</p>
+      <div class="gt-card p-4 mb-4">
+        <p class="gt-muted text-sm">Nama</p>
         <p class="font-medium mb-2">{user.name}</p>
-        <p class="text-sm text-slate-500">Email</p>
+        <p class="gt-muted text-sm">Email</p>
         <p class="font-medium mb-2">{user.email}</p>
-        <p class="text-sm text-slate-500">Role</p>
+        <p class="gt-muted text-sm">Role</p>
         <p class="font-medium capitalize">{user.role}</p>
       </div>
 
       {user.role === "admin" && (
-        <a
-          href="/app/admin/users"
-          class="block bg-white rounded-2xl border border-slate-200 p-4 mb-4 hover:border-emerald-300"
-        >
+        <a href="/app/admin/users" class="gt-card gt-card-hover block p-4 mb-4">
           <p class="font-medium">⚙️ Kelola User</p>
-          <p class="text-sm text-slate-500">
+          <p class="gt-muted text-sm">
             Tambah, edit, atau hapus akun guru lain
           </p>
         </a>
       )}
 
-      <div class="bg-white rounded-2xl border border-slate-200 p-4">
+      <div class="gt-card p-4">
         <h2 class="font-medium mb-3">Ganti Password</h2>
 
         {success && <Alert variant="success">Password berhasil diubah.</Alert>}
@@ -84,10 +81,7 @@ function ProfilePage({
             type="password"
             required
           />
-          <button
-            type="submit"
-            class="w-full bg-emerald-600 text-white rounded-lg py-2.5 font-medium hover:bg-emerald-700 transition"
-          >
+          <button type="submit" class="gt-btn-primary w-full py-2.5 transition">
             Simpan Password Baru
           </button>
         </form>
@@ -96,7 +90,7 @@ function ProfilePage({
       <form method="post" action="/logout">
         <button
           type="submit"
-          class="w-full mt-4 bg-slate-100 text-slate-700 rounded-lg py-2.5 font-medium hover:bg-slate-200 transition"
+          class="gt-btn-secondary w-full mt-4 py-2.5 transition"
         >
           Keluar
         </button>

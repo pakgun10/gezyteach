@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { Alert } from "../components/Alert";
+import { ThemeInitScript, ThemeToggle } from "../components/ThemeToggle";
 import { STUDENT_SESSION_COOKIE } from "../middleware/student-auth";
 import {
   createStudentSession,
@@ -23,26 +24,30 @@ function StudentLoginPage({
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Masuk Siswa · GezyTeach</title>
+        <ThemeInitScript />
         <link rel="stylesheet" href="/static/style.css" />
       </head>
-      <body class="bg-slate-50 text-slate-900 min-h-screen flex items-center justify-center px-4">
-        <div class="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-          <h1 class="text-xl font-semibold text-emerald-700 mb-1">
+      <body class="gt-transition min-h-screen flex items-center justify-center px-4 relative">
+        <div class="absolute top-4 right-4">
+          <ThemeToggle />
+        </div>
+        <div class="gt-card w-full max-w-sm shadow-sm p-6">
+          <h1 class="gt-accent-text text-xl font-semibold mb-1">
             GezyTeach Siswa
           </h1>
-          <p class="text-sm text-slate-500 mb-6">
+          <p class="gt-muted text-sm mb-6">
             Masuk dengan NIS dan PIN yang diberikan guru
           </p>
 
           {error && (
-            <Alert variant="error">NIS atau PIN salah, atau akun belum diaktifkan.</Alert>
+            <Alert variant="error">
+              NIS atau PIN salah, atau akun belum diaktifkan.
+            </Alert>
           )}
 
           <form method="post" action="/siswa/login">
             <label class="block mb-4">
-              <span class="block text-sm font-medium text-slate-700 mb-1">
-                NIS
-              </span>
+              <span class="gt-label">NIS</span>
               <input
                 type="text"
                 name="loginId"
@@ -50,24 +55,22 @@ function StudentLoginPage({
                 value={loginId}
                 required
                 autofocus
-                class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                class="gt-input"
               />
             </label>
             <label class="block mb-4">
-              <span class="block text-sm font-medium text-slate-700 mb-1">
-                PIN
-              </span>
+              <span class="gt-label">PIN</span>
               <input
                 type="password"
                 name="pin"
                 inputmode="numeric"
                 required
-                class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                class="gt-input"
               />
             </label>
             <button
               type="submit"
-              class="w-full bg-emerald-600 text-white rounded-lg py-2.5 font-medium hover:bg-emerald-700 transition"
+              class="gt-btn-primary w-full py-2.5 transition"
             >
               Masuk
             </button>

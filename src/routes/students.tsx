@@ -44,7 +44,7 @@ function ClassListPage({
     <Layout title="Data Siswa" user={user} activeNav="students">
       <h1 class="text-xl font-semibold mb-4">Data Siswa</h1>
 
-      <div class="bg-white rounded-2xl border border-slate-200 p-4 mb-4">
+      <div class="gt-card p-4 mb-4">
         <h2 class="font-medium mb-3">Tambah Kelas</h2>
         <form method="post" action="/app/students" class="flex gap-2">
           <input
@@ -52,12 +52,9 @@ function ClassListPage({
             name="name"
             placeholder="Nama kelas, contoh: VIII-1"
             required
-            class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            class="gt-input flex-1"
           />
-          <button
-            type="submit"
-            class="bg-emerald-600 text-white rounded-lg px-4 py-2 font-medium hover:bg-emerald-700"
-          >
+          <button type="submit" class="gt-btn-primary px-4 py-2">
             Tambah
           </button>
         </form>
@@ -65,24 +62,24 @@ function ClassListPage({
 
       <div class="space-y-2">
         {classes.length === 0 && (
-          <p class="text-sm text-slate-500 text-center py-8">
+          <p class="gt-muted text-sm text-center py-8">
             Belum ada kelas. Tambahkan kelas pertama Anda di atas.
           </p>
         )}
         {classes.map((klass) => (
           <a
             href={`/app/students/${klass.id}`}
-            class="block bg-white rounded-xl border border-slate-200 p-4 hover:border-emerald-300 transition"
+            class="gt-card gt-card-hover block p-4"
           >
             <div class="flex items-center justify-between">
               <div>
                 <p class="font-medium">{klass.name}</p>
-                <p class="text-sm text-slate-500">
+                <p class="gt-muted text-sm">
                   {klass.studentCount} siswa
                   {klass.createdBy && ` · dibuat oleh ${klass.createdBy.name}`}
                 </p>
               </div>
-              <span class="text-slate-400">›</span>
+              <span class="gt-subtle">›</span>
             </div>
           </a>
         ))}
@@ -146,13 +143,13 @@ function ClassDetailPage({
     <Layout title={klass.name} user={user} activeNav="students">
       <div class="mb-4">
         <div class="flex items-center gap-2">
-          <a href="/app/students" class="text-slate-400">
+          <a href="/app/students" class="gt-subtle">
             ‹
           </a>
           <h1 class="text-xl font-semibold">{klass.name}</h1>
         </div>
         {klass.createdBy && (
-          <p class="text-xs text-slate-400 mt-0.5">
+          <p class="gt-subtle text-xs mt-0.5">
             Dibuat oleh {klass.createdBy.name}
           </p>
         )}
@@ -222,7 +219,7 @@ function ClassDetailPage({
         </Alert>
       )}
 
-      <div class="bg-white rounded-2xl border border-slate-200 p-4 mb-4">
+      <div class="gt-card p-4 mb-4">
         <h2 class="font-medium mb-3">Tambah Siswa</h2>
         <form
           method="post"
@@ -233,39 +230,33 @@ function ClassDetailPage({
             type="text"
             name="nis"
             placeholder="NIS (opsional)"
-            class="rounded-lg border border-slate-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            class="gt-input"
           />
           <input
             type="text"
             name="name"
             placeholder="Nama siswa"
             required
-            class="sm:col-span-2 rounded-lg border border-slate-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            class="gt-input sm:col-span-2"
           />
-          <select
-            name="gender"
-            class="rounded-lg border border-slate-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          >
+          <select name="gender" class="gt-input">
             <option value="">Gender</option>
             <option value="L">Laki-laki</option>
             <option value="P">Perempuan</option>
           </select>
-          <button
-            type="submit"
-            class="sm:col-span-4 bg-emerald-600 text-white rounded-lg py-2 font-medium hover:bg-emerald-700"
-          >
+          <button type="submit" class="gt-btn-primary sm:col-span-4 py-2">
             Tambah Siswa
           </button>
         </form>
       </div>
 
-      <div class="bg-white rounded-2xl border border-slate-200 p-4 mb-4">
+      <div class="gt-card p-4 mb-4">
         <h2 class="font-medium mb-1">Import CSV</h2>
-        <p class="text-xs text-slate-500 mb-3">
+        <p class="gt-muted text-xs mb-3">
           Kolom: <code>nis,name,gender</code>. Unduh{" "}
           <a
             href="/templates/students-import.csv"
-            class="text-emerald-700 underline"
+            class="gt-link-emerald underline"
           >
             template
           </a>
@@ -284,10 +275,7 @@ function ClassDetailPage({
             required
             class="flex-1 text-sm"
           />
-          <button
-            type="submit"
-            class="bg-slate-700 text-white rounded-lg px-4 py-2 font-medium hover:bg-slate-800"
-          >
+          <button type="submit" class="gt-btn-secondary px-4 py-2">
             Import
           </button>
         </form>
@@ -299,27 +287,24 @@ function ClassDetailPage({
           action={`/app/students/${klass.id}/activate-all`}
           onsubmit="return confirm('Aktifkan/reset login untuk SEMUA siswa di kelas ini? PIN lama (jika ada) akan diganti.')"
         >
-          <button
-            type="submit"
-            class="bg-emerald-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-emerald-700"
-          >
+          <button type="submit" class="gt-btn-primary px-4 py-2 text-sm">
             Aktifkan Semua Login
           </button>
         </form>
         {exportToken ? (
           <a
             href={`/app/students/${klass.id}/export-logins.csv?token=${exportToken}`}
-            class="bg-slate-700 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-slate-800"
+            class="gt-btn-secondary px-4 py-2 text-sm"
           >
             Export NIS &amp; PIN (CSV)
           </a>
         ) : (
-          <span class="bg-slate-200 text-slate-400 rounded-lg px-4 py-2 text-sm font-medium cursor-not-allowed">
+          <span class="gt-badge-slate rounded-lg px-4 py-2 text-sm font-medium cursor-not-allowed">
             Export NIS &amp; PIN (CSV)
           </span>
         )}
       </div>
-      <p class="text-xs text-slate-500 mb-4">
+      <p class="gt-muted text-xs mb-4">
         Tombol export hanya aktif setelah Anda mengaktifkan/reset login siswa
         (satuan atau massal), karena PIN tidak disimpan dalam bentuk terbaca
         setelah dibuat. Unduh segera, tautan berlaku 30 menit.
@@ -332,25 +317,25 @@ function ClassDetailPage({
         onsubmit={`return confirm('Hapus siswa terpilih? Tindakan ini tidak bisa dibatalkan.')`}
       >
         <div class="flex items-center justify-between mb-2">
-          <label class="flex items-center gap-2 text-sm text-slate-600">
+          <label class="gt-muted flex items-center gap-2 text-sm">
             <input
               type="checkbox"
               onclick="document.querySelectorAll('.student-checkbox').forEach(cb => cb.checked = this.checked)"
-              class="rounded border-slate-300"
+              class="gt-checkbox rounded"
             />
             Pilih semua
           </label>
           <button
             type="submit"
-            class="bg-red-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-red-700 disabled:opacity-40 disabled:pointer-events-none"
+            class="gt-btn-danger px-4 py-2 text-sm disabled:opacity-40 disabled:pointer-events-none"
           >
             Hapus Terpilih
           </button>
         </div>
 
-        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <div class="gt-card overflow-hidden">
           <table class="w-full text-sm">
-            <thead class="bg-slate-50 text-slate-500">
+            <thead class="gt-table-head">
               <tr>
                 <th class="px-3 py-2 w-8"></th>
                 <th class="text-left px-3 py-2">NIS</th>
@@ -362,13 +347,13 @@ function ClassDetailPage({
             </thead>
             <tbody>
               {students.map((s) => (
-                <tr class="border-t border-slate-100">
+                <tr class="gt-table-row-border">
                   <td class="px-3 py-2">
                     <input
                       type="checkbox"
                       name="studentId"
                       value={s.id}
-                      class="student-checkbox rounded border-slate-300"
+                      class="student-checkbox gt-checkbox rounded"
                     />
                   </td>
                   <td class="px-3 py-2">{s.nis ?? "-"}</td>
@@ -376,11 +361,11 @@ function ClassDetailPage({
                   <td class="px-3 py-2">{s.gender ?? "-"}</td>
                   <td class="px-3 py-2">
                     {s.pinHash ? (
-                      <span class="inline-block rounded-full px-2 py-0.5 text-xs font-medium bg-emerald-50 text-emerald-700">
+                      <span class="gt-badge-emerald inline-block rounded-full px-2 py-0.5 text-xs font-medium">
                         Aktif
                       </span>
                     ) : (
-                      <span class="inline-block rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-500">
+                      <span class="gt-badge-slate inline-block rounded-full px-2 py-0.5 text-xs font-medium">
                         Nonaktif
                       </span>
                     )}
@@ -389,7 +374,7 @@ function ClassDetailPage({
                     <button
                       type="submit"
                       form={`activate-${s.id}`}
-                      class="text-emerald-700 text-xs font-medium mr-3"
+                      class="gt-link-emerald text-xs font-medium mr-3"
                     >
                       {s.pinHash ? "Reset PIN" : "Aktifkan"}
                     </button>
@@ -397,7 +382,7 @@ function ClassDetailPage({
                       <button
                         type="submit"
                         form={`disable-${s.id}`}
-                        class="text-slate-500 text-xs font-medium mr-3"
+                        class="gt-link-muted text-xs font-medium mr-3"
                       >
                         Nonaktifkan
                       </button>
@@ -408,7 +393,7 @@ function ClassDetailPage({
                       hx-confirm={`Hapus siswa "${s.name}"?`}
                       hx-target="closest tr"
                       hx-swap="outerHTML"
-                      class="text-red-600 text-xs font-medium"
+                      class="gt-link-red text-xs font-medium"
                     >
                       Hapus
                     </button>
@@ -417,7 +402,7 @@ function ClassDetailPage({
               ))}
               {students.length === 0 && (
                 <tr>
-                  <td colspan={6} class="px-3 py-6 text-center text-slate-400">
+                  <td colspan={6} class="px-3 py-6 text-center gt-subtle">
                     Belum ada siswa di kelas ini.
                   </td>
                 </tr>
