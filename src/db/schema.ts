@@ -16,12 +16,15 @@ const timestamps = {
     .default(sql`(unixepoch('now') * 1000)`),
 };
 
-/** Guru. MVP hanya 1 baris, tapi struktur sudah siap multi-user. */
+/** Guru/pengguna aplikasi. Role "admin" bisa mengelola user lain. */
 export const users = sqliteTable("users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
+  role: text("role", { enum: ["admin", "guru"] })
+    .notNull()
+    .default("guru"),
   ...timestamps,
 });
 

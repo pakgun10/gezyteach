@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { serveStatic } from "hono/bun";
-import { requireAuth } from "./middleware/auth";
+import { requireAdmin, requireAuth } from "./middleware/auth";
+import { adminRoutes } from "./routes/admin.tsx";
 import { attendanceRoutes } from "./routes/attendance.tsx";
 import { authRoutes } from "./routes/auth.tsx";
 import { dashboardRoutes } from "./routes/dashboard.tsx";
@@ -22,6 +23,7 @@ app.get("/", (c) => c.redirect("/app"));
 app.route("/", authRoutes);
 
 app.use("/app/*", requireAuth);
+app.use("/app/admin/*", requireAdmin);
 app.route("/", dashboardRoutes);
 app.route("/", studentsRoutes);
 app.route("/", scheduleRoutes);
@@ -30,6 +32,7 @@ app.route("/", attendanceRoutes);
 app.route("/", scoresRoutes);
 app.route("/", resourcesRoutes);
 app.route("/", profileRoutes);
+app.route("/", adminRoutes);
 
 const port = Number(process.env.PORT ?? 3000);
 

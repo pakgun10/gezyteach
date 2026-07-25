@@ -4,10 +4,13 @@ import { sessions, users } from "../db/schema";
 
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 hari
 
+export type UserRole = "admin" | "guru";
+
 export type SessionUser = {
   id: number;
   name: string;
   email: string;
+  role: UserRole;
 };
 
 function generateSessionId(): string {
@@ -61,7 +64,12 @@ export async function getSessionUser(
 
   if (!user) return null;
 
-  return { id: user.id, name: user.name, email: user.email };
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role as UserRole,
+  };
 }
 
 export async function destroySession(sessionId: string | undefined) {

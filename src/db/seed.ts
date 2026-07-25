@@ -21,6 +21,7 @@ async function main() {
     name: DEFAULT_NAME,
     email: DEFAULT_EMAIL,
     passwordHash,
+    role: "admin",
   });
 
   console.log("User default dibuat:");

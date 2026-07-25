@@ -33,8 +33,22 @@ function ProfilePage({
         <p class="text-sm text-slate-500">Nama</p>
         <p class="font-medium mb-2">{user.name}</p>
         <p class="text-sm text-slate-500">Email</p>
-        <p class="font-medium">{user.email}</p>
+        <p class="font-medium mb-2">{user.email}</p>
+        <p class="text-sm text-slate-500">Role</p>
+        <p class="font-medium capitalize">{user.role}</p>
       </div>
+
+      {user.role === "admin" && (
+        <a
+          href="/app/admin/users"
+          class="block bg-white rounded-2xl border border-slate-200 p-4 mb-4 hover:border-emerald-300"
+        >
+          <p class="font-medium">⚙️ Kelola User</p>
+          <p class="text-sm text-slate-500">
+            Tambah, edit, atau hapus akun guru lain
+          </p>
+        </a>
+      )}
 
       <div class="bg-white rounded-2xl border border-slate-200 p-4">
         <h2 class="font-medium mb-3">Ganti Password</h2>
@@ -44,14 +58,10 @@ function ProfilePage({
           <Alert variant="error">Password saat ini salah.</Alert>
         )}
         {error === "too_short" && (
-          <Alert variant="error">
-            Password baru minimal 8 karakter.
-          </Alert>
+          <Alert variant="error">Password baru minimal 8 karakter.</Alert>
         )}
         {error === "mismatch" && (
-          <Alert variant="error">
-            Konfirmasi password baru tidak sama.
-          </Alert>
+          <Alert variant="error">Konfirmasi password baru tidak sama.</Alert>
         )}
 
         <form method="post" action="/app/profile/password">
