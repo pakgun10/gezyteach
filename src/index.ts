@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { serveStatic } from "hono/bun";
 import { requireAdmin, requireAuth } from "./middleware/auth";
+import { requireStudentAuth } from "./middleware/student-auth";
 import { adminRoutes } from "./routes/admin.tsx";
 import { attendanceRoutes } from "./routes/attendance.tsx";
 import { authRoutes } from "./routes/auth.tsx";
@@ -10,6 +11,8 @@ import { profileRoutes } from "./routes/profile.tsx";
 import { resourcesRoutes } from "./routes/resources.tsx";
 import { scheduleRoutes } from "./routes/schedule.tsx";
 import { scoresRoutes } from "./routes/scores.tsx";
+import { studentAuthRoutes } from "./routes/student-auth.tsx";
+import { studentPortalRoutes } from "./routes/student-portal.tsx";
 import { studentsRoutes } from "./routes/students.tsx";
 
 const app = new Hono();
@@ -33,6 +36,15 @@ app.route("/", scoresRoutes);
 app.route("/", resourcesRoutes);
 app.route("/", profileRoutes);
 app.route("/", adminRoutes);
+
+app.route("/", studentAuthRoutes);
+
+app.use("/siswa", requireStudentAuth);
+app.use("/siswa/absensi", requireStudentAuth);
+app.use("/siswa/nilai", requireStudentAuth);
+app.use("/siswa/profil", requireStudentAuth);
+app.use("/siswa/profil/*", requireStudentAuth);
+app.route("/", studentPortalRoutes);
 
 const port = Number(process.env.PORT ?? 3000);
 

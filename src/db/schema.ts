@@ -64,10 +64,26 @@ export const students = sqliteTable(
     name: text("name").notNull(),
     gender: text("gender", { enum: ["L", "P"] }),
     active: integer("active", { mode: "boolean" }).notNull().default(true),
+    /** Username login siswa: NIS lokal sekolah (bagian pendek), unik antar-kelas. */
+    loginId: text("login_id").unique(),
+    /** Hash PIN login siswa. Null = akun belum diaktifkan oleh guru. */
+    pinHash: text("pin_hash"),
     ...timestamps,
   },
   (table) => [unique().on(table.classId, table.nis)],
 );
+
+/** Sesi login siswa (cookie session token -> student), terpisah dari sesi guru. */
+export const studentSessions = sqliteTable("student_sessions", {
+  id: text("id").primaryKey(), // random token
+  studentId: integer("student_id")
+    .notNull()
+    .references(() => students.id, { onDelete: "cascade" }),
+  expiresAt: integer("expires_at").notNull(),
+  createdAt: integer("created_at")
+    .notNull()
+    .default(sql`(unixepoch('now') * 1000)`),
+});
 
 /** Jadwal mengajar mingguan (satu baris = satu sesi kelas+mapel). */
 export const schedules = sqliteTable("schedules", {
@@ -199,7 +215,18 @@ export const studentsRelations = relations(students, ({ one, many }) => ({
   }),
   scores: many(scores),
   attendance: many(attendance),
+  sessions: many(studentSessions),
 }));
+
+export const studentSessionsRelations = relations(
+  studentSessions,
+  ({ one }) => ({
+    student: one(students, {
+      fields: [studentSessions.studentId],
+      references: [students.id],
+    }),
+  }),
+);
 
 export const schedulesRelations = relations(schedules, ({ one, many }) => ({
   user: one(users, { fields: [schedules.userId], references: [users.id] }),
