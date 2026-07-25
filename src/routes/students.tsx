@@ -77,7 +77,10 @@ function ClassListPage({
             <div class="flex items-center justify-between">
               <div>
                 <p class="font-medium">{klass.name}</p>
-                <p class="text-sm text-slate-500">{klass.studentCount} siswa</p>
+                <p class="text-sm text-slate-500">
+                  {klass.studentCount} siswa
+                  {klass.createdBy && ` · dibuat oleh ${klass.createdBy.name}`}
+                </p>
               </div>
               <span class="text-slate-400">›</span>
             </div>
@@ -124,7 +127,11 @@ function ClassDetailPage({
   exportToken,
 }: {
   user: SessionUser;
-  klass: { id: number; name: string };
+  klass: {
+    id: number;
+    name: string;
+    createdBy?: { id: number; name: string } | null;
+  };
   students: Awaited<ReturnType<typeof listStudentsByClass>>;
   importResult?: { imported: number; skipped: number; errors: string[] };
   activatedPin?: { studentName: string; loginId: string; pin: string };
@@ -137,11 +144,18 @@ function ClassDetailPage({
 }) {
   return (
     <Layout title={klass.name} user={user} activeNav="students">
-      <div class="flex items-center gap-2 mb-4">
-        <a href="/app/students" class="text-slate-400">
-          ‹
-        </a>
-        <h1 class="text-xl font-semibold">{klass.name}</h1>
+      <div class="mb-4">
+        <div class="flex items-center gap-2">
+          <a href="/app/students" class="text-slate-400">
+            ‹
+          </a>
+          <h1 class="text-xl font-semibold">{klass.name}</h1>
+        </div>
+        {klass.createdBy && (
+          <p class="text-xs text-slate-400 mt-0.5">
+            Dibuat oleh {klass.createdBy.name}
+          </p>
+        )}
       </div>
 
       {importResult && (

@@ -11,6 +11,7 @@ export async function listClassesWithStudentCount() {
     orderBy: (c, { asc }) => asc(c.name),
     with: {
       students: true,
+      createdBy: { columns: { id: true, name: true } },
     },
   });
 
@@ -23,6 +24,9 @@ export async function listClassesWithStudentCount() {
 export async function getClassById(classId: number) {
   return db.query.classes.findFirst({
     where: (c, { eq: eqFn }) => eqFn(c.id, classId),
+    with: {
+      createdBy: { columns: { id: true, name: true } },
+    },
   });
 }
 
