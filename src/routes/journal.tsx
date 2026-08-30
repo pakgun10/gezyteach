@@ -112,7 +112,7 @@ journalRoutes.post("/app/journal", async (c) => {
   return c.redirect(`/app/journal/${journal!.id}`);
 });
 
-journalRoutes.get("/app/journal/:id", async (c) => {
+journalRoutes.get("/app/journal/:id{[0-9]+}", async (c) => {
   const user = c.get("user");
   const id = Number(c.req.param("id"));
   const journal = await getJournalForUser(user.id, id);
@@ -214,7 +214,7 @@ journalRoutes.get("/app/journal/:id", async (c) => {
   );
 });
 
-journalRoutes.post("/app/journal/:id", async (c) => {
+journalRoutes.post("/app/journal/:id{[0-9]+}", async (c) => {
   const user = c.get("user");
   const id = Number(c.req.param("id"));
   const journal = await getJournalForUser(user.id, id);

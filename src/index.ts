@@ -33,8 +33,10 @@ app.use("/app/admin/*", requireAdmin);
 app.route("/", dashboardRoutes);
 app.route("/", studentsRoutes);
 app.route("/", scheduleRoutes);
-app.route("/", journalRoutes);
+// Harus dipasang sebelum journalRoutes: route jurnal lama memiliki pola
+// `/app/journal/:id`, yang jika lebih dulu akan menganggap "anecdotal" sebagai id.
 app.route("/", anecdotalRoutes);
+app.route("/", journalRoutes);
 app.route("/", attendanceRoutes);
 app.route("/", attendanceRecapRoutes);
 app.route("/", scoresRoutes);
