@@ -196,6 +196,59 @@ export const resources = sqliteTable("resources", {
   ...timestamps,
 });
 
+/** Nilai visi sekolah. Dapat dikelola admin, dengan enam nilai awal dari seed. */
+export const visionValues = sqliteTable("vision_values", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull().unique(),
+  description: text("description"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  ...timestamps,
+});
+
+/** Catatan observasi harian siswa oleh guru. */
+export const anecdotalRecords = sqliteTable("anecdotal_records", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  studentId: integer("student_id").notNull().references(() => students.id, { onDelete: "cascade" }),
+  teacherId: integer("teacher_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  eventDate: text("event_date").notNull(),
+  eventTime: text("event_time"),
+  location: text("location"),
+  description: text("description").notNull(),
+  category: text("category", { enum: ["positive", "needs_guidance"] }).notNull(),
+  followUpNotes: text("follow_up_notes"),
+  ...timestamps,
+});
+
+/** Nilai visi yang terkait ke satu catatan observasi. */
+export const anecdotalRecordValues = sqliteTable("anecdotal_record_values", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  anecdotalRecordId: integer("anecdotal_record_id").notNull().references(() => anecdotalRecords.id, { onDelete: "cascade" }),
+  visionValueId: integer("vision_value_id").notNull().references(() => visionValues.id, { onDelete: "cascade" }),
+}, (table) => [unique().on(table.anecdotalRecordId, table.visionValueId)]);
+
+/** Cache rekap akhir semester yang narasinya dapat dilengkapi guru. */
+export const anecdotalSemesterSummaries = sqliteTable("anecdotal_semester_summaries", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  studentId: integer("student_id").notNull().references(() => students.id, { onDelete: "cascade" }),
+  visionValueId: integer("vision_value_id").notNull().references(() => visionValues.id, { onDelete: "cascade" }),
+  semester: text("semester").notNull(),
+  academicYear: text("academic_year").notNull(),
+  positiveCount: integer("positive_count").notNull().default(0),
+  needsGuidanceCount: integer("needs_guidance_count").notNull().default(0),
+  developmentCategory: text("development_category", { enum: ["BT", "MT", "MB", "SM"] }).notNull(),
+  narrativeDescription: text("narrative_description"),
+  generatedAt: integer("generated_at").notNull().default(sql`(unixepoch('now') * 1000)`),
+  updatedAt: integer("updated_at").notNull().default(sql`(unixepoch('now') * 1000)`),
+}, (table) => [unique().on(table.studentId, table.visionValueId, table.semester, table.academicYear)]);
+
+/** Ambang jumlah catatan positif untuk kategori perkembangan, dapat diubah admin. */
+export const anecdotalDevelopmentThresholds = sqliteTable("anecdotal_development_thresholds", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  category: text("category", { enum: ["BT", "MT", "MB", "SM"] }).notNull().unique(),
+  minimumPositiveCount: integer("minimum_positive_count").notNull(),
+  ...timestamps,
+});
+
 // ---------------------------------------------------------------------------
 // Relasi (dipakai oleh Drizzle query API, mis. db.query.classes.findMany({ with }))
 // ---------------------------------------------------------------------------
@@ -204,6 +257,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   createdClasses: many(classes),
   schedules: many(schedules),
   resources: many(resources),
+  anecdotalRecords: many(anecdotalRecords),
   sessions: many(sessions),
 }));
 
@@ -215,6 +269,8 @@ export const classesRelations = relations(classes, ({ one, many }) => ({
   students: many(students),
   schedules: many(schedules),
   assessmentPlans: many(assessmentPlans),
+  anecdotalRecords: many(anecdotalRecords),
+  anecdotalSemesterSummaries: many(anecdotalSemesterSummaries),
 }));
 
 export const studentsRelations = relations(students, ({ one, many }) => ({
@@ -225,6 +281,8 @@ export const studentsRelations = relations(students, ({ one, many }) => ({
   scores: many(scores),
   attendance: many(attendance),
   sessions: many(studentSessions),
+  anecdotalRecords: many(anecdotalRecords),
+  anecdotalSemesterSummaries: many(anecdotalSemesterSummaries),
 }));
 
 export const studentSessionsRelations = relations(
@@ -289,6 +347,27 @@ export const attendanceRelations = relations(attendance, ({ one }) => ({
 
 export const resourcesRelations = relations(resources, ({ one }) => ({
   user: one(users, { fields: [resources.userId], references: [users.id] }),
+}));
+
+export const visionValuesRelations = relations(visionValues, ({ many }) => ({
+  recordValues: many(anecdotalRecordValues),
+  semesterSummaries: many(anecdotalSemesterSummaries),
+}));
+
+export const anecdotalRecordsRelations = relations(anecdotalRecords, ({ one, many }) => ({
+  student: one(students, { fields: [anecdotalRecords.studentId], references: [students.id] }),
+  teacher: one(users, { fields: [anecdotalRecords.teacherId], references: [users.id] }),
+  values: many(anecdotalRecordValues),
+}));
+
+export const anecdotalRecordValuesRelations = relations(anecdotalRecordValues, ({ one }) => ({
+  record: one(anecdotalRecords, { fields: [anecdotalRecordValues.anecdotalRecordId], references: [anecdotalRecords.id] }),
+  visionValue: one(visionValues, { fields: [anecdotalRecordValues.visionValueId], references: [visionValues.id] }),
+}));
+
+export const anecdotalSemesterSummariesRelations = relations(anecdotalSemesterSummaries, ({ one }) => ({
+  student: one(students, { fields: [anecdotalSemesterSummaries.studentId], references: [students.id] }),
+  visionValue: one(visionValues, { fields: [anecdotalSemesterSummaries.visionValueId], references: [visionValues.id] }),
 }));
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({

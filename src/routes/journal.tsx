@@ -34,6 +34,10 @@ journalRoutes.get("/app/journal", async (c) => {
 
   return c.html(
     <Layout title="Jurnal" user={user} activeNav="journal">
+      <div class="flex gap-2 mb-5 text-sm">
+        <a href="/app/journal" class="gt-btn-secondary">Jurnal Mengajar</a>
+        <a href="/app/journal/anecdotal" class="gt-subtle">Anecdotal Record</a>
+      </div>
       <h1 class="text-xl font-semibold mb-1">Jurnal Mengajar</h1>
       <p class="gt-muted text-sm mb-4">{formatDateLabel(date)}</p>
 
@@ -117,6 +121,10 @@ journalRoutes.get("/app/journal/:id", async (c) => {
 
   return c.html(
     <Layout title="Jurnal" user={user} activeNav="journal">
+      <div class="flex gap-2 mb-5 text-sm">
+        <a href="/app/journal" class="gt-btn-secondary">Jurnal Mengajar</a>
+        <a href="/app/journal/anecdotal" class="gt-subtle">Anecdotal Record</a>
+      </div>
       <div class="flex items-center gap-2 mb-1">
         <a href="/app/journal" class="gt-subtle">
           ‹
