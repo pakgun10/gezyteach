@@ -101,6 +101,122 @@
         box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
     }
 
+    /* Disclosure ringkas untuk form opsional di dalam card */
+    .gt-disclosure-summary {
+        display: flex;
+        align-items: center;
+        min-height: 3rem;
+        padding: 0.75rem 1rem;
+        cursor: pointer;
+        user-select: none;
+        list-style: none;
+        border-radius: inherit;
+        transition:
+            background-color 0.2s ease,
+            color 0.2s ease;
+    }
+    .gt-disclosure-summary::-webkit-details-marker {
+        display: none;
+    }
+    .gt-disclosure-summary::before {
+        content: "▶";
+        width: 1.25rem;
+        flex-shrink: 0;
+        color: rgb(var(--gt-accent));
+        font-size: 0.75rem;
+        line-height: 1;
+    }
+    .gt-disclosure[open] > .gt-disclosure-summary::before {
+        content: "▼";
+    }
+    .gt-disclosure-summary:hover {
+        background-color: rgb(var(--gt-border-soft) / 0.7);
+    }
+    .gt-disclosure-summary:focus-visible {
+        outline: 2px solid rgb(var(--gt-ring));
+        outline-offset: -2px;
+    }
+    .dark .gt-disclosure-summary:hover {
+        background-color: rgb(var(--gt-border) / 0.25);
+    }
+    .gt-disclosure-content {
+        padding: 0 1rem 1rem;
+    }
+    .gt-disclosure[open] > .gt-disclosure-content {
+        animation: gt-disclosure-open 0.2s ease-out;
+    }
+    @keyframes gt-disclosure-open {
+        from {
+            opacity: 0;
+            transform: translateY(-0.25rem);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .gt-disclosure[open] > .gt-disclosure-content {
+            animation: none;
+        }
+    }
+
+    /* Navigasi halaman server-side, tetap nyaman disentuh di layar kecil */
+    .gt-pagination {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 0.375rem;
+        margin-top: 1rem;
+    }
+    .gt-pagination-link {
+        display: inline-flex;
+        min-width: 2.75rem;
+        min-height: 2.75rem;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid rgb(var(--gt-border));
+        border-radius: 0.5rem;
+        background-color: rgb(var(--gt-surface));
+        color: rgb(var(--gt-text));
+        font-size: 0.875rem;
+        transition:
+            background-color 0.2s ease,
+            border-color 0.2s ease;
+    }
+    .gt-pagination-link:hover {
+        border-color: rgb(var(--gt-accent));
+        background-color: rgb(var(--gt-border-soft));
+    }
+    .gt-pagination-current {
+        border-color: rgb(var(--gt-accent));
+        background-color: rgb(var(--gt-accent));
+        color: white;
+        font-weight: 600;
+    }
+    .gt-pagination-current:hover {
+        border-color: rgb(var(--gt-accent));
+        background-color: rgb(var(--gt-accent));
+    }
+    .dark .gt-pagination-current {
+        color: rgb(2 6 23);
+    }
+    .gt-pagination-disabled {
+        cursor: not-allowed;
+        color: rgb(var(--gt-text-subtle));
+        opacity: 0.65;
+    }
+    .gt-pagination-disabled:hover {
+        border-color: rgb(var(--gt-border));
+        background-color: rgb(var(--gt-surface));
+    }
+    .gt-pagination-ellipsis {
+        padding: 0.5rem 0.25rem;
+        color: rgb(var(--gt-text-muted));
+    }
+
     /* Card yang bisa di-hover (link ke fitur) */
     .gt-card-hover {
         transition:

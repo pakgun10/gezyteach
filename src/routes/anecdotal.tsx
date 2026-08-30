@@ -2,7 +2,8 @@ import { Hono } from "hono";
 import type { SessionUser } from "../services/auth.service";
 import { Layout } from "../components/Layout";
 import { todayIso } from "../utils/dates";
-import { createRecord, deleteRecord, getRecordForTeacher, listActiveStudentsForTeacher, listRecords, listTeachingClasses, listVisionValues, monthlyRecap, saveNarrative, semesterRecap, updateRecord } from "../services/anecdotal.service";
+import { createRecord, deleteRecord, getRecordForTeacher, listActiveStudentsForTeacher, listRecords, listRecordsPage, listTeachingClasses, listUnobservedStudents, listVisionValues, monthlyRecap, saveNarrative, semesterRecap, updateRecord } from "../services/anecdotal.service";
+import type { RecordCategory } from "../services/anecdotal.service";
 
 type AppContext = { Variables: { user: SessionUser } };
 export const anecdotalRoutes = new Hono<AppContext>();
@@ -10,6 +11,41 @@ const locations = ["Kelas", "Halaman/lapangan", "Kantin", "Perpustakaan", "Luar 
 const followUps = ["Apresiasi lisan", "Bimbingan pribadi", "Komunikasi ke orang tua", "Teguran ringan", "Perlu pemantauan lanjutan"];
 const ids = (value: unknown) => (Array.isArray(value) ? value : value ? [value] : []).map(Number).filter(Number.isInteger);
 const str = (value: unknown) => String(value ?? "").trim();
+const ANECDOTAL_PAGE_SIZE = 20;
+
+type AnecdotalListQuery = {
+  classId?: number;
+  month: string;
+  search?: string;
+  category?: RecordCategory;
+};
+
+function recordCategory(value: string | undefined): RecordCategory | undefined {
+  return value === "positive" || value === "needs_guidance" ? value : undefined;
+}
+
+function anecdotalListHref(query: AnecdotalListQuery, page: number) {
+  const params = new URLSearchParams();
+  if (query.classId) params.set("classId", String(query.classId));
+  params.set("month", query.month);
+  if (query.search) params.set("search", query.search);
+  if (query.category) params.set("category", query.category);
+  params.set("page", String(page));
+  return `/app/journal/anecdotal?${params.toString()}`;
+}
+
+function compactPageNumbers(page: number, totalPages: number) {
+  const visible = [...new Set([1, page - 1, page, page + 1, totalPages])]
+    .filter((item) => item >= 1 && item <= totalPages)
+    .sort((a, b) => a - b);
+  const result: Array<number | "ellipsis"> = [];
+  for (const item of visible) {
+    const previous = result.at(-1);
+    if (typeof previous === "number" && item - previous > 1) result.push("ellipsis");
+    result.push(item);
+  }
+  return result;
+}
 
 function JournalTabs({ active }: { active: "teaching" | "anecdotal" }) {
   const tabClass = "inline-flex items-center px-3 py-2 whitespace-nowrap";
@@ -32,12 +68,83 @@ function RecordForm({ action, classes, students, values, record }: { action: str
 }
 
 anecdotalRoutes.get("/app/journal/anecdotal", async (c) => {
-  const user = c.get("user"); const classId = Number(c.req.query("classId")) || undefined; const month = c.req.query("month") || todayIso().slice(0, 7);
-  const [classes, records] = await Promise.all([listTeachingClasses(user.id), listRecords(user.id, { classId, month })]);
-  const unobserved = classId
-    ? (await listActiveStudentsForTeacher(user.id, classId)).filter((student) => !records.some((record) => record.studentId === student.id))
-    : [];
-  return c.html(<Layout title="Anecdotal Record" user={user} activeNav="journal"><JournalTabs active="anecdotal" /><div class="flex items-center justify-between gap-3 mb-3"><div><h1 class="text-xl font-semibold">Anecdotal Record</h1><p class="gt-muted text-sm">Catatan observasi harian murid</p></div><a href={`/app/journal/anecdotal/new${classId ? `?classId=${classId}` : ""}`} class="gt-btn-primary inline-flex items-center px-3 py-2 text-sm whitespace-nowrap">+ Catatan</a></div><form method="get" class="grid grid-cols-2 gap-2 mb-4"><select name="classId" class="gt-input" onchange="this.form.submit()"><option value="">Semua kelas</option>{classes.map((item) => <option value={item.id} selected={item.id === classId}>{item.name}</option>)}</select><input type="month" name="month" value={month} class="gt-input" onchange="this.form.submit()" /></form>{classId && unobserved.length > 0 && <div class="gt-card p-3 mb-4 text-sm"><b>Pengingat: {unobserved.length} murid belum tercatat bulan ini.</b><p class="gt-muted mt-1">{unobserved.map((student) => student.name).join(", ")}</p></div>}<div class="flex gap-3 text-sm mb-4"><a class="gt-link-muted" href={`/app/journal/anecdotal/recap/monthly?classId=${classId ?? ""}&month=${month}`}>Rekap bulanan</a><a class="gt-link-muted" href={`/app/journal/anecdotal/recap/semester?classId=${classId ?? ""}`}>Rekap semester</a></div><div class="space-y-2">{records.map((record) => <a href={`/app/journal/anecdotal/${record.id}/edit`} class="gt-card p-4 block"><div class="flex justify-between gap-2"><p class="font-medium">{record.student.name} <span class="gt-muted font-normal">({record.student.class.name})</span></p><span class={record.category === "positive" ? "gt-badge-emerald" : "gt-badge-amber"}>{record.category === "positive" ? "Positif" : "Perlu bimbingan"}</span></div><p class="text-sm mt-1">{record.description}</p><p class="gt-muted text-xs mt-2">{record.eventDate} · {record.values.map((v) => v.visionValue.name).join(", ")}</p></a>)}{records.length === 0 && <p class="gt-muted text-center py-8">Belum ada catatan pada periode ini.</p>}</div></Layout>);
+  const user = c.get("user");
+  const classId = Number(c.req.query("classId")) || undefined;
+  const requestedMonth = c.req.query("month");
+  const month = requestedMonth && /^\d{4}-(0[1-9]|1[0-2])$/.test(requestedMonth)
+    ? requestedMonth
+    : todayIso().slice(0, 7);
+  const search = c.req.query("search")?.trim() || undefined;
+  const category = recordCategory(c.req.query("category"));
+  const page = Math.max(Math.trunc(Number(c.req.query("page"))) || 1, 1);
+  const query = { classId, month, search, category };
+
+  const [classes, result, unobserved] = await Promise.all([
+    listTeachingClasses(user.id),
+    listRecordsPage(user.id, query, { page, pageSize: ANECDOTAL_PAGE_SIZE }),
+    classId ? listUnobservedStudents(user.id, classId, month) : Promise.resolve([]),
+  ]);
+  const { records, pagination } = result;
+  const firstRecord = pagination.total === 0 ? 0 : (pagination.page - 1) * pagination.pageSize + 1;
+  const lastRecord = Math.min(pagination.page * pagination.pageSize, pagination.total);
+  const pageNumbers = compactPageNumbers(pagination.page, pagination.totalPages);
+
+  return c.html(
+    <Layout title="Anecdotal Record" user={user} activeNav="journal">
+      <JournalTabs active="anecdotal" />
+      <div class="flex items-center justify-between gap-3 mb-3">
+        <div>
+          <h1 class="text-xl font-semibold">Anecdotal Record</h1>
+          <p class="gt-muted text-sm">Catatan observasi harian murid</p>
+        </div>
+        <a href={`/app/journal/anecdotal/new${classId ? `?classId=${classId}` : ""}`} class="gt-btn-primary inline-flex items-center px-3 py-2 text-sm whitespace-nowrap">+ Catatan</a>
+      </div>
+
+      <form method="get" class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4" onsubmit="clearTimeout(this._searchTimer)">
+        <input type="hidden" name="page" value="1" />
+        <input
+          type="search"
+          name="search"
+          value={search ?? ""}
+          placeholder="🔍 Cari nama siswa..."
+          aria-label="Cari nama siswa"
+          class="gt-input sm:col-span-2"
+          oninput="clearTimeout(this.form._searchTimer);this.form._searchTimer=setTimeout(()=>this.form.requestSubmit(),400)"
+        />
+        <select name="classId" class="gt-input" onchange="clearTimeout(this.form._searchTimer);this.form.requestSubmit()">
+          <option value="">Semua kelas</option>
+          {classes.map((item) => <option value={item.id} selected={item.id === classId}>{item.name}</option>)}
+        </select>
+        <input type="month" name="month" value={month} class="gt-input" onchange="clearTimeout(this.form._searchTimer);this.form.requestSubmit()" />
+        <select name="category" class="gt-input sm:col-span-2" onchange="clearTimeout(this.form._searchTimer);this.form.requestSubmit()">
+          <option value="">Semua kategori</option>
+          <option value="positive" selected={category === "positive"}>Positif</option>
+          <option value="needs_guidance" selected={category === "needs_guidance"}>Perlu Perhatian</option>
+        </select>
+      </form>
+
+      {classId && unobserved.length > 0 && <div class="gt-card p-3 mb-4 text-sm"><b>Pengingat: {unobserved.length} murid belum tercatat bulan ini.</b><p class="gt-muted mt-1">{unobserved.map((student) => student.name).join(", ")}</p></div>}
+      <div class="flex gap-3 text-sm mb-4"><a class="gt-link-muted" href={`/app/journal/anecdotal/recap/monthly?classId=${classId ?? ""}&month=${month}`}>Rekap bulanan</a><a class="gt-link-muted" href={`/app/journal/anecdotal/recap/semester?classId=${classId ?? ""}`}>Rekap semester</a></div>
+
+      {pagination.total > 0 && <p class="gt-muted text-sm mb-3">Menampilkan {firstRecord}–{lastRecord} dari {pagination.total} catatan</p>}
+      <div class="space-y-2">
+        {records.map((record) => <a href={`/app/journal/anecdotal/${record.id}/edit`} class="gt-card p-4 block"><div class="flex justify-between gap-2"><p class="font-medium">{record.student.name} <span class="gt-muted font-normal">({record.student.class.name})</span></p><span class={record.category === "positive" ? "gt-badge-emerald" : "gt-badge-amber"}>{record.category === "positive" ? "Positif" : "Perlu bimbingan"}</span></div><p class="text-sm mt-1">{record.description}</p><p class="gt-muted text-xs mt-2">{record.eventDate} · {record.values.map((v) => v.visionValue.name).join(", ")}</p></a>)}
+        {records.length === 0 && <p class="gt-muted text-center py-8">Tidak ada catatan yang sesuai.</p>}
+      </div>
+
+      {pagination.totalPages > 1 && <nav class="gt-pagination" aria-label="Navigasi halaman catatan">
+        {pagination.page === 1
+          ? <span class="gt-pagination-link gt-pagination-disabled" aria-disabled="true">‹ Sebelumnya</span>
+          : <a class="gt-pagination-link" href={anecdotalListHref(query, pagination.page - 1)} rel="prev">‹ Sebelumnya</a>}
+        {pageNumbers.map((item) => item === "ellipsis"
+          ? <span class="gt-pagination-ellipsis" aria-hidden="true">…</span>
+          : <a class={`gt-pagination-link ${item === pagination.page ? "gt-pagination-current" : ""}`} href={anecdotalListHref(query, item)} aria-current={item === pagination.page ? "page" : undefined}>{item}</a>)}
+        {pagination.page === pagination.totalPages
+          ? <span class="gt-pagination-link gt-pagination-disabled" aria-disabled="true">Berikutnya ›</span>
+          : <a class="gt-pagination-link" href={anecdotalListHref(query, pagination.page + 1)} rel="next">Berikutnya ›</a>}
+      </nav>}
+    </Layout>,
+  );
 });
 
 anecdotalRoutes.get("/app/journal/anecdotal/new", async (c) => { const user = c.get("user"); const classId = Number(c.req.query("classId")); const [classes, students, values] = await Promise.all([listTeachingClasses(user.id), classId ? listActiveStudentsForTeacher(user.id, classId) : [], listVisionValues()]); return c.html(<Layout title="Catatan Baru" user={user} activeNav="journal"><JournalTabs active="anecdotal" /><h1 class="text-xl font-semibold mb-4">Catatan observasi baru</h1><RecordForm action="/app/journal/anecdotal" classes={classes} students={students} values={values} /></Layout>); });
@@ -55,8 +162,22 @@ anecdotalRoutes.get("/app/journal/anecdotal/recap/semester", async (c) => { cons
 
 anecdotalRoutes.post("/app/journal/anecdotal/recap/narrative", async (c) => { const body = await c.req.parseBody(); const semester = str(body.semester); const academicYear = str(body.academicYear); const classId = Number(body.classId); await saveNarrative(c.get("user").id, Number(body.studentId), Number(body.visionValueId), semester, academicYear, str(body.narrativeDescription)); return c.redirect(`/app/journal/anecdotal/recap/semester?classId=${classId}&semester=${encodeURIComponent(semester)}&academicYear=${encodeURIComponent(academicYear)}`); });
 
-// API JSON untuk integrasi/klien lain.
-anecdotalRoutes.get("/api/anecdotal-records", async (c) => c.json(await listRecords(c.get("user").id, { classId: Number(c.req.query("classId")) || undefined, month: c.req.query("month") })));
+// API JSON untuk integrasi/klien lain. Tanpa parameter pagination, kontrak array lama tetap dipertahankan.
+anecdotalRoutes.get("/api/anecdotal-records", async (c) => {
+  const filters = {
+    classId: Number(c.req.query("classId")) || undefined,
+    month: c.req.query("month"),
+    search: c.req.query("search")?.trim() || undefined,
+    category: recordCategory(c.req.query("category")),
+  };
+  if (c.req.query("page") !== undefined || c.req.query("pageSize") !== undefined) {
+    return c.json(await listRecordsPage(c.get("user").id, filters, {
+      page: Number(c.req.query("page")) || 1,
+      pageSize: Number(c.req.query("pageSize")) || ANECDOTAL_PAGE_SIZE,
+    }));
+  }
+  return c.json(await listRecords(c.get("user").id, filters));
+});
 anecdotalRoutes.post("/api/anecdotal-records", async (c) => { const body = await c.req.json(); const category = str(body.category); const record = (category === "positive" || category === "needs_guidance") ? await createRecord(c.get("user").id, { studentId: Number(body.studentId), eventDate: str(body.eventDate) || todayIso(), eventTime: str(body.eventTime), location: str(body.location), description: str(body.description), category, followUpNotes: str(body.followUpNotes), visionValueIds: ids(body.visionValueIds) }) : null; return record ? c.json(record, 201) : c.json({ error: "Data tidak valid atau tidak diizinkan" }, 400); });
 anecdotalRoutes.put("/api/anecdotal-records/:id", async (c) => { const body = await c.req.json(); const category = str(body.category); const ok = (category === "positive" || category === "needs_guidance") && await updateRecord(c.get("user").id, Number(c.req.param("id")), { eventDate: str(body.eventDate) || todayIso(), eventTime: str(body.eventTime), location: str(body.location), description: str(body.description), category, followUpNotes: str(body.followUpNotes), visionValueIds: ids(body.visionValueIds) }); return ok ? c.json({ ok: true }) : c.json({ error: "Data tidak valid atau tidak ditemukan" }, 400); });
 anecdotalRoutes.delete("/api/anecdotal-records/:id", async (c) => (await deleteRecord(c.get("user").id, Number(c.req.param("id")))) ? c.body(null, 204) : c.json({ error: "Tidak ditemukan" }, 404));

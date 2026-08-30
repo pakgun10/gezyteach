@@ -1,9 +1,41 @@
-import { and, eq } from "drizzle-orm";
+import { and, countDistinct, desc, eq, sql } from "drizzle-orm";
 import { db } from "../db";
-import { attendance } from "../db/schema";
+import { attendance, classes, schedules } from "../db/schema";
 import { listStudentsByClass } from "./student.service";
 
 export type AttendanceStatus = "H" | "S" | "I" | "A";
+
+export async function listAttendanceExecutions(
+  userId: number,
+  classId: number,
+  month?: string,
+) {
+  const selectedMonth = month && /^(0[1-9]|1[0-2])$/.test(month) ? month : undefined;
+
+  return db
+    .select({
+      date: attendance.date,
+      classId: schedules.classId,
+      className: classes.name,
+      subjects: sql<string>`group_concat(distinct ${schedules.subject})`,
+      studentCount: countDistinct(attendance.studentId),
+      absentCount: sql<number>`count(distinct case when ${attendance.status} <> 'H' then ${attendance.studentId} end)`,
+    })
+    .from(attendance)
+    .innerJoin(schedules, eq(attendance.scheduleId, schedules.id))
+    .innerJoin(classes, eq(schedules.classId, classes.id))
+    .where(
+      and(
+        eq(schedules.userId, userId),
+        eq(schedules.classId, classId),
+        selectedMonth
+          ? sql`substr(${attendance.date}, 6, 2) = ${selectedMonth}`
+          : undefined,
+      ),
+    )
+    .groupBy(attendance.date, schedules.classId, classes.name)
+    .orderBy(desc(attendance.date));
+}
 
 export async function getAttendanceForSchedule(
   scheduleId: number,

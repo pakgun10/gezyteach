@@ -1,8 +1,53 @@
-import { and, asc, desc, eq, gte, inArray, lte, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, inArray, lt, lte, sql } from "drizzle-orm";
 import { db } from "../db";
 import { anecdotalDevelopmentThresholds, anecdotalRecords, anecdotalRecordValues, anecdotalSemesterSummaries, classes, schedules, students, visionValues } from "../db/schema";
 
 export type RecordCategory = "positive" | "needs_guidance";
+
+export type RecordFilters = {
+  classId?: number;
+  month?: string;
+  search?: string;
+  category?: RecordCategory;
+  dateFrom?: string;
+  dateTo?: string;
+};
+
+export type RecordPagination = {
+  page: number;
+  pageSize: number;
+};
+
+function nextMonth(month: string) {
+  const [year, monthNumber] = month.split("-").map(Number);
+  const next = new Date(Date.UTC(year!, monthNumber!, 1));
+  return `${next.getUTCFullYear()}-${String(next.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
+function recordWhere(userId: number, filters: RecordFilters) {
+  const search = filters.search?.trim();
+  const month = filters.month && /^\d{4}-(0[1-9]|1[0-2])$/.test(filters.month) ? filters.month : undefined;
+  return and(
+    eq(anecdotalRecords.teacherId, userId),
+    filters.classId
+      ? inArray(
+          anecdotalRecords.studentId,
+          db.select({ id: students.id }).from(students).where(eq(students.classId, filters.classId)),
+        )
+      : undefined,
+    search
+      ? inArray(
+          anecdotalRecords.studentId,
+          db.select({ id: students.id }).from(students).where(sql`instr(lower(${students.name}), lower(${search})) > 0`),
+        )
+      : undefined,
+    filters.category ? eq(anecdotalRecords.category, filters.category) : undefined,
+    month ? gte(anecdotalRecords.eventDate, `${month}-01`) : undefined,
+    month ? lt(anecdotalRecords.eventDate, `${nextMonth(month)}-01`) : undefined,
+    filters.dateFrom ? gte(anecdotalRecords.eventDate, filters.dateFrom) : undefined,
+    filters.dateTo ? lte(anecdotalRecords.eventDate, filters.dateTo) : undefined,
+  );
+}
 
 export async function listTeachingClasses(userId: number) {
   const rows = await db.select({ id: classes.id, name: classes.name, level: classes.level, academicYear: classes.academicYear })
@@ -30,13 +75,47 @@ export async function getRecordForTeacher(userId: number, recordId: number) {
   return record;
 }
 
-export async function listRecords(userId: number, filters: { classId?: number; month?: string }) {
-  const rows = await db.query.anecdotalRecords.findMany({
-    where: (r, { eq }) => eq(r.teacherId, userId),
+export async function listRecords(userId: number, filters: RecordFilters) {
+  return db.query.anecdotalRecords.findMany({
+    where: recordWhere(userId, filters),
     orderBy: (r, { desc }) => [desc(r.eventDate), desc(r.eventTime), desc(r.id)],
     with: { student: { with: { class: true } }, values: { with: { visionValue: true } } },
   });
-  return rows.filter((row) => (!filters.classId || row.student.classId === filters.classId) && (!filters.month || row.eventDate.startsWith(filters.month)));
+}
+
+export async function listRecordsPage(userId: number, filters: RecordFilters, pagination: RecordPagination) {
+  const pageSize = Math.min(Math.max(Math.trunc(pagination.pageSize) || 20, 1), 100);
+  const requestedPage = Math.max(Math.trunc(pagination.page) || 1, 1);
+  const where = recordWhere(userId, filters);
+  const [totalRow] = await db.select({ total: count() }).from(anecdotalRecords).where(where);
+  const total = totalRow?.total ?? 0;
+  const totalPages = Math.ceil(total / pageSize);
+  const page = Math.min(requestedPage, Math.max(totalPages, 1));
+  const records = await db.query.anecdotalRecords.findMany({
+    where,
+    orderBy: (r, { desc }) => [desc(r.eventDate), desc(r.eventTime), desc(r.id)],
+    limit: pageSize,
+    offset: (page - 1) * pageSize,
+    with: { student: { with: { class: true } }, values: { with: { visionValue: true } } },
+  });
+
+  return { records, pagination: { page, pageSize, total, totalPages } };
+}
+
+export async function listUnobservedStudents(userId: number, classId: number, month: string) {
+  const activeStudents = await listActiveStudentsForTeacher(userId, classId);
+  if (activeStudents.length === 0) return [];
+
+  const observed = await db.selectDistinct({ studentId: anecdotalRecords.studentId })
+    .from(anecdotalRecords)
+    .where(and(
+      eq(anecdotalRecords.teacherId, userId),
+      inArray(anecdotalRecords.studentId, activeStudents.map((student) => student.id)),
+      gte(anecdotalRecords.eventDate, `${month}-01`),
+      lt(anecdotalRecords.eventDate, `${nextMonth(month)}-01`),
+    ));
+  const observedIds = new Set(observed.map((row) => row.studentId));
+  return activeStudents.filter((student) => !observedIds.has(student.id));
 }
 
 export async function createRecord(userId: number, data: { studentId: number; eventDate: string; eventTime?: string; location?: string; description: string; category: RecordCategory; followUpNotes?: string; visionValueIds: number[] }) {
@@ -82,7 +161,7 @@ export async function monthlyRecap(userId: number, classId: number, month: strin
 
 export async function semesterRecap(userId: number, classId: number, semester: string, academicYear: string) {
   const range = semesterDateRange(semester, academicYear);
-  const records = (await listRecords(userId, { classId })).filter((r) => r.eventDate >= range.from && r.eventDate <= range.to);
+  const records = await listRecords(userId, { classId, dateFrom: range.from, dateTo: range.to });
   const studentsInClass = await listActiveStudentsForTeacher(userId, classId);
   const values = await listVisionValues();
   const thresholds = await db.query.anecdotalDevelopmentThresholds.findMany({ orderBy: (t, { asc }) => asc(t.minimumPositiveCount) });

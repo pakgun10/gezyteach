@@ -33,55 +33,59 @@ function SchedulePage({
     <Layout title="Jadwal" user={user} activeNav="schedule">
       <h1 class="text-xl font-semibold mb-4">Jadwal Mengajar</h1>
 
-      <div class="gt-card p-4 mb-4">
-        <h2 class="font-medium mb-3">Tambah Jadwal</h2>
-        {classes.length === 0 ? (
-          <p class="gt-muted text-sm">
-            Tambahkan kelas terlebih dahulu di menu{" "}
-            <a href="/app/students" class="gt-link-emerald underline">
-              Data Siswa
-            </a>{" "}
-            sebelum membuat jadwal.
-          </p>
-        ) : (
-          <form
-            method="post"
-            action="/app/schedule"
-            class="grid grid-cols-1 sm:grid-cols-2 gap-2"
-          >
-            <select name="classId" required class="gt-input">
-              <option value="">Pilih kelas</option>
-              {classes.map((k) => (
-                <option value={k.id}>{k.name}</option>
-              ))}
-            </select>
-            <input
-              type="text"
-              name="subject"
-              placeholder="Mata pelajaran"
-              required
-              class="gt-input"
-            />
-            <select name="dayOfWeek" required class="gt-input">
-              <option value="">Pilih hari</option>
-              {dayOrder.map((d) => (
-                <option value={d}>{DAY_NAMES[d]}</option>
-              ))}
-            </select>
-            <input
-              type="text"
-              name="room"
-              placeholder="Ruang (opsional)"
-              class="gt-input"
-            />
-            <input type="time" name="startTime" required class="gt-input" />
-            <input type="time" name="endTime" required class="gt-input" />
-            <button type="submit" class="gt-btn-primary sm:col-span-2 py-2">
-              Tambah Jadwal
-            </button>
-          </form>
-        )}
-      </div>
+      <details class="gt-card gt-disclosure mb-4">
+        <summary class="gt-disclosure-summary font-medium">
+          Tambah Jadwal
+        </summary>
+        <div class="gt-disclosure-content">
+          {classes.length === 0 ? (
+            <p class="gt-muted text-sm">
+              Tambahkan kelas terlebih dahulu di menu{" "}
+              <a href="/app/students" class="gt-link-emerald underline">
+                Data Siswa
+              </a>{" "}
+              sebelum membuat jadwal.
+            </p>
+          ) : (
+            <form
+              method="post"
+              action="/app/schedule"
+              class="grid grid-cols-1 sm:grid-cols-2 gap-2"
+            >
+              <select name="classId" required class="gt-input">
+                <option value="">Pilih kelas</option>
+                {classes.map((k) => (
+                  <option value={k.id}>{k.name}</option>
+                ))}
+              </select>
+              <input
+                type="text"
+                name="subject"
+                placeholder="Mata pelajaran"
+                required
+                class="gt-input"
+              />
+              <select name="dayOfWeek" required class="gt-input">
+                <option value="">Pilih hari</option>
+                {dayOrder.map((d) => (
+                  <option value={d}>{DAY_NAMES[d]}</option>
+                ))}
+              </select>
+              <input
+                type="text"
+                name="room"
+                placeholder="Ruang (opsional)"
+                class="gt-input"
+              />
+              <input type="time" name="startTime" required class="gt-input" />
+              <input type="time" name="endTime" required class="gt-input" />
+              <button type="submit" class="gt-btn-primary sm:col-span-2 py-2">
+                Tambah Jadwal
+              </button>
+            </form>
+          )}
+        </div>
+      </details>
 
       <div class="space-y-4">
         {dayOrder.map((day) => {
