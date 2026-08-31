@@ -36,6 +36,13 @@
       "when": 1788080000000,
       "tag": "0004_anecdotal_records",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1788140000000,
+      "tag": "0005_attendance_query_indexes",
+      "breakpoints": true
     }
   ]
 }

@@ -23,7 +23,7 @@ const NAV_ITEMS = [
 
 export const Navbar: FC<{ active?: string }> = ({ active }) => {
   return (
-    <nav class="gt-nav-glass fixed bottom-0 inset-x-0 z-10">
+    <nav class="gt-nav-glass fixed bottom-0 inset-x-0 z-10" hx-boost="true">
       <ul class="flex overflow-x-auto no-scrollbar">
         {NAV_ITEMS.map((item) => (
           <li class="flex-1 min-w-16">

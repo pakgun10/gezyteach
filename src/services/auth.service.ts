@@ -47,28 +47,31 @@ export async function getSessionUser(
 ): Promise<SessionUser | null> {
   if (!sessionId) return null;
 
-  const session = await db.query.sessions.findFirst({
-    where: (s, { eq }) => eq(s.id, sessionId),
-  });
+  const [sessionUser] = await db
+    .select({
+      expiresAt: sessions.expiresAt,
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      role: users.role,
+    })
+    .from(sessions)
+    .innerJoin(users, eq(sessions.userId, users.id))
+    .where(eq(sessions.id, sessionId))
+    .limit(1);
 
-  if (!session) return null;
+  if (!sessionUser) return null;
 
-  if (session.expiresAt < Date.now()) {
+  if (sessionUser.expiresAt < Date.now()) {
     await db.delete(sessions).where(eq(sessions.id, sessionId));
     return null;
   }
 
-  const user = await db.query.users.findFirst({
-    where: (u, { eq }) => eq(u.id, session.userId),
-  });
-
-  if (!user) return null;
-
   return {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    role: user.role as UserRole,
+    id: sessionUser.id,
+    name: sessionUser.name,
+    email: sessionUser.email,
+    role: sessionUser.role as UserRole,
   };
 }
 

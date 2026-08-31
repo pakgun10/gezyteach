@@ -1,6 +1,7 @@
 import { relations, sql } from "drizzle-orm";
 import {
   integer,
+  index,
   real,
   sqliteTable,
   text,
@@ -92,22 +93,32 @@ export const studentSessions = sqliteTable("student_sessions", {
 });
 
 /** Jadwal mengajar mingguan (satu baris = satu sesi kelas+mapel). */
-export const schedules = sqliteTable("schedules", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  userId: integer("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  classId: integer("class_id")
-    .notNull()
-    .references(() => classes.id, { onDelete: "cascade" }),
-  subject: text("subject").notNull(),
-  /** 0 = Minggu, 1 = Senin, ..., 6 = Sabtu */
-  dayOfWeek: integer("day_of_week").notNull(),
-  startTime: text("start_time").notNull(), // HH:MM
-  endTime: text("end_time").notNull(), // HH:MM
-  room: text("room"),
-  ...timestamps,
-});
+export const schedules = sqliteTable(
+  "schedules",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    classId: integer("class_id")
+      .notNull()
+      .references(() => classes.id, { onDelete: "cascade" }),
+    subject: text("subject").notNull(),
+    /** 0 = Minggu, 1 = Senin, ..., 6 = Sabtu */
+    dayOfWeek: integer("day_of_week").notNull(),
+    startTime: text("start_time").notNull(), // HH:MM
+    endTime: text("end_time").notNull(), // HH:MM
+    room: text("room"),
+    ...timestamps,
+  },
+  (table) => [
+    index("schedules_user_day_start_idx").on(
+      table.userId,
+      table.dayOfWeek,
+      table.startTime,
+    ),
+  ],
+);
 
 /** Jurnal mengajar harian, dibuat dari sebuah jadwal. */
 export const journals = sqliteTable(
@@ -178,7 +189,10 @@ export const attendance = sqliteTable(
     note: text("note"),
     ...timestamps,
   },
-  (table) => [unique().on(table.studentId, table.scheduleId, table.date)],
+  (table) => [
+    unique().on(table.studentId, table.scheduleId, table.date),
+    index("attendance_schedule_date_idx").on(table.scheduleId, table.date),
+  ],
 );
 
 /** Tautan perangkat KBM (disimpan di Google Drive), dikelompokkan per kategori. */

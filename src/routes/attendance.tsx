@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import type { SessionUser } from "../services/auth.service";
 import {
   getAttendanceForSchedule,
-  listAttendanceExecutions,
+  listAttendanceExecutionsPage,
   saveAttendance,
   type AttendanceStatus,
 } from "../services/attendance.service";
@@ -40,6 +40,30 @@ const MONTHS = [
   ["11", "November"],
   ["12", "Desember"],
 ] as const;
+
+const ATTENDANCE_HISTORY_PAGE_SIZE = 20;
+
+function attendanceHistoryHref(classId: number, month: string, page: number) {
+  const params = new URLSearchParams({
+    classId: String(classId),
+    month,
+    page: String(page),
+  });
+  return `/app/attendance/history?${params.toString()}`;
+}
+
+function compactPageNumbers(page: number, totalPages: number) {
+  const visible = [...new Set([1, page - 1, page, page + 1, totalPages])]
+    .filter((item) => item >= 1 && item <= totalPages)
+    .sort((a, b) => a - b);
+  const result: Array<number | "ellipsis"> = [];
+  for (const item of visible) {
+    const previous = result.at(-1);
+    if (typeof previous === "number" && item - previous > 1) result.push("ellipsis");
+    result.push(item);
+  }
+  return result;
+}
 
 function AttendanceTabs({ active }: { active: "students" | "history" }) {
   const tabClass = "inline-flex items-center px-3 py-2 whitespace-nowrap";
@@ -207,20 +231,28 @@ attendanceRoutes.get("/app/attendance/history", async (c) => {
     : availableClasses[0]?.id;
   const requestedMonth = c.req.query("month");
   const currentMonth = todayIso().slice(5, 7);
-  const month = requestedMonth === "all" || MONTHS.some(([value]) => value === requestedMonth)
-    ? requestedMonth
-    : currentMonth;
-  const executions = classId
-    ? await listAttendanceExecutions(
+  let month = currentMonth;
+  if (requestedMonth && (requestedMonth === "all" || MONTHS.some(([value]) => value === requestedMonth))) {
+    month = requestedMonth;
+  }
+  const requestedPage = Math.max(Math.trunc(Number(c.req.query("page"))) || 1, 1);
+  const result = classId
+    ? await listAttendanceExecutionsPage(
         user.id,
         classId,
         month === "all" ? undefined : month,
+        { page: requestedPage, pageSize: ATTENDANCE_HISTORY_PAGE_SIZE },
       )
-    : [];
+    : {
+        executions: [],
+        pagination: { page: 1, pageSize: ATTENDANCE_HISTORY_PAGE_SIZE, total: 0, totalPages: 0 },
+      };
+  const { executions, pagination } = result;
   const selectedClass = availableClasses.find((item) => item.id === classId);
   const monthLabel = month === "all"
     ? "Semua Bulan"
     : MONTHS.find(([value]) => value === month)?.[1];
+  const pageNumbers = compactPageNumbers(pagination.page, pagination.totalPages);
 
   return c.html(
     <Layout title="Pelaksanaan Absensi" user={user} activeNav="attendance">
@@ -235,6 +267,7 @@ attendanceRoutes.get("/app/attendance/history", async (c) => {
         action="/app/attendance/history"
         class="gt-card p-4 mb-4 grid grid-cols-1 sm:grid-cols-2 gap-2"
       >
+        <input type="hidden" name="page" value="1" />
         <label class="block">
           <span class="gt-label">Kelas</span>
           <select name="classId" required class="gt-input">
@@ -279,7 +312,6 @@ attendanceRoutes.get("/app/attendance/history", async (c) => {
                   <tr class="text-left gt-muted text-xs border-b">
                     <th class="py-2 pr-3 whitespace-nowrap">Hari</th>
                     <th class="py-2 pr-3 whitespace-nowrap">Tanggal</th>
-                    <th class="py-2 pr-3 whitespace-nowrap">Kelas</th>
                     <th class="py-2 pr-3 whitespace-nowrap">Mata Pelajaran</th>
                     <th class="py-2 pr-3 text-center whitespace-nowrap">Status</th>
                     <th class="py-2 px-2 text-center whitespace-nowrap">Diabsen</th>
@@ -294,9 +326,6 @@ attendanceRoutes.get("/app/attendance/history", async (c) => {
                       </td>
                       <td class="py-2 pr-3 whitespace-nowrap">
                         {formatDateOnly(execution.date)}
-                      </td>
-                      <td class="py-2 pr-3 font-medium whitespace-nowrap">
-                        {execution.className}
                       </td>
                       <td class="py-2 pr-3">{execution.subjects.replaceAll(",", ", ")}</td>
                       <td class="py-2 pr-3 text-center">
@@ -315,6 +344,48 @@ attendanceRoutes.get("/app/attendance/history", async (c) => {
             <p class="gt-muted text-sm text-center py-6">
               Belum ada pelaksanaan absensi untuk filter ini.
             </p>
+          )}
+
+          {classId && pagination.totalPages > 1 && (
+            <nav class="gt-pagination" aria-label="Navigasi halaman pelaksanaan absensi">
+              {pagination.page === 1 ? (
+                <span class="gt-pagination-link gt-pagination-disabled" aria-disabled="true">
+                  ‹ Sebelumnya
+                </span>
+              ) : (
+                <a
+                  class="gt-pagination-link"
+                  href={attendanceHistoryHref(classId, month, pagination.page - 1)}
+                  rel="prev"
+                >
+                  ‹ Sebelumnya
+                </a>
+              )}
+              {pageNumbers.map((item) => item === "ellipsis" ? (
+                <span class="gt-pagination-ellipsis" aria-hidden="true">…</span>
+              ) : (
+                <a
+                  class={`gt-pagination-link ${item === pagination.page ? "gt-pagination-current" : ""}`}
+                  href={attendanceHistoryHref(classId, month, item)}
+                  aria-current={item === pagination.page ? "page" : undefined}
+                >
+                  {item}
+                </a>
+              ))}
+              {pagination.page === pagination.totalPages ? (
+                <span class="gt-pagination-link gt-pagination-disabled" aria-disabled="true">
+                  Berikutnya ›
+                </span>
+              ) : (
+                <a
+                  class="gt-pagination-link"
+                  href={attendanceHistoryHref(classId, month, pagination.page + 1)}
+                  rel="next"
+                >
+                  Berikutnya ›
+                </a>
+              )}
+            </nav>
           )}
         </div>
       )}
