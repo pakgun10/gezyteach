@@ -1,4 +1,5 @@
 import type { FC } from "hono/jsx";
+import type { SessionUser } from "../services/auth.service";
 
 const NAV_ITEMS = [
   { key: "dashboard", label: "Beranda", href: "/app", icon: "🏠" },
@@ -15,11 +16,16 @@ const NAV_ITEMS = [
   },
 ];
 
-export const Navbar: FC<{ active?: string }> = ({ active }) => {
+export const Navbar: FC<{ active?: string; user: SessionUser }> = ({
+  active,
+  user,
+}) => {
   return (
     <nav class="gt-nav-glass fixed bottom-0 inset-x-0 z-10" hx-boost="true">
       <ul class="flex overflow-x-auto no-scrollbar">
-        {NAV_ITEMS.map((item) => (
+        {NAV_ITEMS.filter(
+          (item) => item.key !== "students" || user.role === "admin",
+        ).map((item) => (
           <li class="flex-1 min-w-16">
             <a
               href={item.href}

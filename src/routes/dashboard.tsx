@@ -62,10 +62,12 @@ dashboardRoutes.get("/app", async (c) => {
           <span class="text-2xl">📊</span>
           <p class="text-sm font-medium mt-1">Nilai</p>
         </a>
-        <a href="/app/students" class="gt-card gt-card-hover p-4 text-center">
-          <span class="text-2xl">🎓</span>
-          <p class="text-sm font-medium mt-1">Data Siswa</p>
-        </a>
+        {user.role === "admin" && (
+          <a href="/app/students" class="gt-card gt-card-hover p-4 text-center">
+            <span class="text-2xl">🎓</span>
+            <p class="text-sm font-medium mt-1">Data Siswa</p>
+          </a>
+        )}
         <a href="/app/resources" class="gt-card gt-card-hover p-4 text-center">
           <span class="text-2xl">📁</span>
           <p class="text-sm font-medium mt-1">Perangkat</p>

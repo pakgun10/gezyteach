@@ -40,11 +40,17 @@ function SchedulePage({
         <div class="gt-disclosure-content">
           {classes.length === 0 ? (
             <p class="gt-muted text-sm">
-              Tambahkan kelas terlebih dahulu di menu{" "}
-              <a href="/app/students" class="gt-link-emerald underline">
-                Data Siswa
-              </a>{" "}
-              sebelum membuat jadwal.
+              {user.role === "admin" ? (
+                <>
+                  Tambahkan kelas terlebih dahulu di menu{" "}
+                  <a href="/app/students" class="gt-link-emerald underline">
+                    Data Siswa
+                  </a>{" "}
+                  sebelum membuat jadwal.
+                </>
+              ) : (
+                "Belum ada kelas. Hubungi admin untuk menambahkan data kelas dan siswa."
+              )}
             </p>
           ) : (
             <form

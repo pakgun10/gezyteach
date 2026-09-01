@@ -30,6 +30,8 @@ app.route("/", authRoutes);
 app.use("/app/*", requireAuth);
 app.use("/api/*", requireAuth);
 app.use("/app/admin/*", requireAdmin);
+app.use("/app/students", requireAdmin);
+app.use("/app/students/*", requireAdmin);
 app.route("/", dashboardRoutes);
 app.route("/", studentsRoutes);
 app.route("/", scheduleRoutes);

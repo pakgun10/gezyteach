@@ -46,7 +46,7 @@ export const Layout: FC<LayoutProps> = ({
             <main class="flex-1 px-4 py-4 pb-24 max-w-3xl w-full mx-auto">
               {children}
             </main>
-            <Navbar active={activeNav} />
+            <Navbar active={activeNav} user={user} />
           </>
         ) : (
           <main class="flex-1 flex items-center justify-center px-4 relative">
