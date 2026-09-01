@@ -11,6 +11,7 @@ import {
   listSchedulesByUser,
 } from "../services/schedule.service";
 import { Layout } from "../components/Layout";
+import { AttendanceTabs } from "../components/AttendanceTabs";
 import { DAY_NAMES, dayOfWeekFromIso, todayIso, formatDateLabel } from "../utils/dates";
 
 type AppContext = {
@@ -63,26 +64,6 @@ function compactPageNumbers(page: number, totalPages: number) {
     result.push(item);
   }
   return result;
-}
-
-function AttendanceTabs({ active }: { active: "students" | "history" }) {
-  const tabClass = "inline-flex items-center px-3 py-2 whitespace-nowrap";
-  return (
-    <div class="flex gap-2 mb-5 text-sm overflow-x-auto no-scrollbar">
-      <a
-        href="/app/attendance"
-        class={`${tabClass} ${active === "students" ? "gt-btn-primary" : "gt-btn-secondary"}`}
-      >
-        Absensi Siswa
-      </a>
-      <a
-        href="/app/attendance/history"
-        class={`${tabClass} ${active === "history" ? "gt-btn-primary" : "gt-btn-secondary"}`}
-      >
-        Pelaksanaan
-      </a>
-    </div>
-  );
 }
 
 function formatDateOnly(dateIso: string) {

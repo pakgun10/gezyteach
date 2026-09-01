@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import type { SessionUser } from "../services/auth.service";
 import { getAttendanceRecap } from "../services/attendance-recap.service";
 import { Layout } from "../components/Layout";
+import { AttendanceTabs } from "../components/AttendanceTabs";
 import { todayIso } from "../utils/dates";
 import { toCsv } from "../utils/csv";
 
@@ -24,7 +25,8 @@ attendanceRecapRoutes.get("/app/attendance/recap", async (c) => {
   const recap = await getAttendanceRecap(user.id, start, end);
 
   return c.html(
-    <Layout title="Rekap Absensi" user={user} activeNav="recap">
+    <Layout title="Rekap Absensi" user={user} activeNav="attendance">
+      <AttendanceTabs active="recap" />
       <h1 class="text-xl font-semibold mb-1">Rekapitulasi Absensi</h1>
       <p class="gt-muted text-sm mb-4">
         Ringkasan kehadiran per murid dalam rentang tanggal.

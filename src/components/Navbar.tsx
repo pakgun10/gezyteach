@@ -5,12 +5,6 @@ const NAV_ITEMS = [
   { key: "schedule", label: "Jadwal", href: "/app/schedule", icon: "🗓️" },
   { key: "journal", label: "Jurnal", href: "/app/journal", icon: "📝" },
   { key: "attendance", label: "Absensi", href: "/app/attendance", icon: "✅" },
-  {
-    key: "recap",
-    label: "Rekap",
-    href: "/app/attendance/recap",
-    icon: "📋",
-  },
   { key: "students", label: "Siswa", href: "/app/students", icon: "🎓" },
   { key: "scores", label: "Nilai", href: "/app/scores", icon: "📊" },
   {
