@@ -128,6 +128,14 @@ export const journals = sqliteTable(
     scheduleId: integer("schedule_id")
       .notNull()
       .references(() => schedules.id, { onDelete: "cascade" }),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    classId: integer("class_id")
+      .notNull()
+      .references(() => classes.id, { onDelete: "cascade" }),
+    /** Mapel yang dinormalisasi untuk mencegah jurnal ganda lintas jadwal. */
+    subjectKey: text("subject_key").notNull(),
     date: text("date").notNull(), // YYYY-MM-DD
     topic: text("topic"),
     achievement: text("achievement"),
@@ -140,7 +148,10 @@ export const journals = sqliteTable(
       .default("draft"),
     ...timestamps,
   },
-  (table) => [unique().on(table.scheduleId, table.date)],
+  (table) => [
+    unique().on(table.scheduleId, table.date),
+    unique().on(table.userId, table.classId, table.subjectKey, table.date),
+  ],
 );
 
 /** Rencana komponen nilai per kelas + mapel (mis. UH, Tugas, PTS, PAS). */

@@ -43,6 +43,13 @@
       "when": 1788140000000,
       "tag": "0005_attendance_query_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1788278191082,
+      "tag": "0006_journal_assignment_unique",
+      "breakpoints": true
     }
   ]
 }

@@ -2,44 +2,75 @@ import { and, eq } from "drizzle-orm";
 import { db } from "../db";
 import { journals } from "../db/schema";
 
+export function normalizeJournalSubject(subject: string) {
+  return subject.trim().toLocaleLowerCase("id-ID");
+}
+
 export async function listJournalsByDate(userId: number, date: string) {
   return db.query.journals.findMany({
-    where: (j, { eq: eqFn }) => eqFn(j.date, date),
+    where: (j, { eq: eqFn, and: andFn }) =>
+      andFn(eqFn(j.userId, userId), eqFn(j.date, date)),
     with: {
       schedule: { with: { class: true } },
     },
-  }).then((rows) => rows.filter((r) => r.schedule.userId === userId));
+  });
 }
 
 export async function getJournalForUser(userId: number, journalId: number) {
   const journal = await db.query.journals.findFirst({
-    where: (j, { eq: eqFn }) => eqFn(j.id, journalId),
+    where: (j, { eq: eqFn, and: andFn }) =>
+      andFn(eqFn(j.id, journalId), eqFn(j.userId, userId)),
     with: {
       schedule: { with: { class: true } },
     },
   });
 
-  if (!journal || journal.schedule.userId !== userId) return null;
-  return journal;
+  return journal ?? null;
 }
 
-export async function getJournalByScheduleAndDate(
+export async function getOrCreateDraftJournal(
+  userId: number,
   scheduleId: number,
   date: string,
 ) {
-  return db.query.journals.findFirst({
-    where: (j, { eq: eqFn, and: andFn }) =>
-      andFn(eqFn(j.scheduleId, scheduleId), eqFn(j.date, date)),
+  const schedule = await db.query.schedules.findFirst({
+    where: (s, { eq: eqFn, and: andFn }) =>
+      andFn(eqFn(s.id, scheduleId), eqFn(s.userId, userId)),
   });
-}
+  if (!schedule) return null;
 
-export async function createDraftJournal(scheduleId: number, date: string) {
+  const subjectKey = normalizeJournalSubject(schedule.subject);
   const [created] = await db
     .insert(journals)
-    .values({ scheduleId, date, status: "draft" })
+    .values({
+      scheduleId,
+      userId,
+      classId: schedule.classId,
+      subjectKey,
+      date,
+      status: "draft",
+    })
+    .onConflictDoNothing({
+      target: [
+        journals.userId,
+        journals.classId,
+        journals.subjectKey,
+        journals.date,
+      ],
+    })
     .returning();
 
-  return created;
+  if (created) return created;
+
+  return db.query.journals.findFirst({
+    where: (j, { eq: eqFn, and: andFn }) =>
+      andFn(
+        eqFn(j.userId, userId),
+        eqFn(j.classId, schedule.classId),
+        eqFn(j.subjectKey, subjectKey),
+        eqFn(j.date, date),
+      ),
+  });
 }
 
 export async function updateJournal(

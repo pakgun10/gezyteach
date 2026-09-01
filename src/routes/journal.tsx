@@ -1,10 +1,10 @@
 import { Hono } from "hono";
 import type { SessionUser } from "../services/auth.service";
 import {
-  getJournalByScheduleAndDate,
+  getOrCreateDraftJournal,
   getJournalForUser,
   listJournalsByDate,
-  createDraftJournal,
+  normalizeJournalSubject,
   updateJournal,
 } from "../services/journal.service";
 import { listSchedulesByUserAndDay } from "../services/schedule.service";
@@ -28,9 +28,28 @@ journalRoutes.get("/app/journal", async (c) => {
     listJournalsByDate(user.id, date),
   ]);
 
-  const journalByScheduleId = new Map(
-    journalsToday.map((j) => [j.scheduleId, j]),
+  const assignmentKey = (classId: number, subject: string) =>
+    `${classId}:${normalizeJournalSubject(subject)}`;
+  const journalByAssignment = new Map(
+    journalsToday.map((journal) => [
+      `${journal.classId}:${journal.subjectKey}`,
+      journal,
+    ]),
   );
+  const scheduleGroups = new Map<
+    string,
+    { schedule: (typeof schedulesToday)[number]; times: string[] }
+  >();
+  for (const schedule of schedulesToday) {
+    const key = assignmentKey(schedule.classId, schedule.subject);
+    const time = `${schedule.startTime}–${schedule.endTime}`;
+    const group = scheduleGroups.get(key);
+    if (group) {
+      group.times.push(time);
+    } else {
+      scheduleGroups.set(key, { schedule, times: [time] });
+    }
+  }
 
   return c.html(
     <Layout title="Jurnal" user={user} activeNav="journal">
@@ -52,41 +71,49 @@ journalRoutes.get("/app/journal", async (c) => {
       </form>
 
       <div class="space-y-2">
-        {schedulesToday.map((s) => {
-          const journal = journalByScheduleId.get(s.id);
+        {[...scheduleGroups.values()].map(({ schedule: s, times }) => {
+          const journal = journalByAssignment.get(
+            assignmentKey(s.classId, s.subject),
+          );
           const isComplete = journal?.status === "completed";
 
-          return (
+          return journal ? (
+            <a
+              href={`/app/journal/${journal.id}`}
+              class="gt-card gt-card-hover p-4 flex items-center justify-between"
+            >
+              <div>
+                <p class="font-medium">
+                  {s.subject} · {s.class.name}
+                </p>
+                <p class="gt-muted text-sm">{times.join(", ")}</p>
+              </div>
+              <span
+                class={`text-xs font-medium px-3 py-1.5 rounded-lg shrink-0 ml-2 ${
+                  isComplete ? "gt-badge-emerald" : "gt-badge-amber"
+                }`}
+              >
+                {isComplete ? "Selesai" : "Lengkapi"}
+              </span>
+            </a>
+          ) : (
             <div class="gt-card p-4 flex items-center justify-between">
               <div>
                 <p class="font-medium">
                   {s.subject} · {s.class.name}
                 </p>
-                <p class="gt-muted text-sm">
-                  {s.startTime}–{s.endTime}
-                </p>
+                <p class="gt-muted text-sm">{times.join(", ")}</p>
               </div>
-              {journal ? (
-                <a
-                  href={`/app/journal/${journal.id}`}
-                  class={`text-xs font-medium px-3 py-1.5 rounded-lg shrink-0 ml-2 ${
-                    isComplete ? "gt-badge-emerald" : "gt-badge-amber"
-                  }`}
+              <form method="post" action="/app/journal" class="shrink-0 ml-2">
+                <input type="hidden" name="scheduleId" value={s.id} />
+                <input type="hidden" name="date" value={date} />
+                <button
+                  type="submit"
+                  class="gt-btn-secondary text-xs px-3 py-1.5"
                 >
-                  {isComplete ? "Selesai" : "Lengkapi"}
-                </a>
-              ) : (
-                <form method="post" action="/app/journal" class="shrink-0 ml-2">
-                  <input type="hidden" name="scheduleId" value={s.id} />
-                  <input type="hidden" name="date" value={date} />
-                  <button
-                    type="submit"
-                    class="gt-btn-secondary text-xs px-3 py-1.5"
-                  >
-                    Buat Jurnal
-                  </button>
-                </form>
-              )}
+                  Buat Jurnal
+                </button>
+              </form>
             </div>
           );
         })}
@@ -102,14 +129,15 @@ journalRoutes.get("/app/journal", async (c) => {
 });
 
 journalRoutes.post("/app/journal", async (c) => {
+  const user = c.get("user");
   const body = await c.req.parseBody();
   const scheduleId = Number(body.scheduleId);
   const date = String(body.date ?? todayIso());
 
-  const existing = await getJournalByScheduleAndDate(scheduleId, date);
-  const journal = existing ?? (await createDraftJournal(scheduleId, date));
+  const journal = await getOrCreateDraftJournal(user.id, scheduleId, date);
+  if (!journal) return c.redirect("/app/journal");
 
-  return c.redirect(`/app/journal/${journal!.id}`);
+  return c.redirect(`/app/journal/${journal.id}`);
 });
 
 journalRoutes.get("/app/journal/:id{[0-9]+}", async (c) => {
