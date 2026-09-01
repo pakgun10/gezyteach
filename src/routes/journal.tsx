@@ -97,24 +97,30 @@ journalRoutes.get("/app/journal", async (c) => {
               </span>
             </a>
           ) : (
-            <div class="gt-card p-4 flex items-center justify-between">
-              <div>
-                <p class="font-medium">
-                  {s.subject} · {s.class.name}
-                </p>
-                <p class="gt-muted text-sm">{times.join(", ")}</p>
-              </div>
-              <form method="post" action="/app/journal" class="shrink-0 ml-2">
-                <input type="hidden" name="scheduleId" value={s.id} />
-                <input type="hidden" name="date" value={date} />
-                <button
-                  type="submit"
-                  class="gt-btn-secondary text-xs px-3 py-1.5"
-                >
+            <form
+              method="post"
+              action="/app/journal"
+              class="gt-card gt-card-hover"
+            >
+              <input type="hidden" name="scheduleId" value={s.id} />
+              <input type="hidden" name="date" value={date} />
+              <button
+                type="submit"
+                class="w-full p-4 flex items-center justify-between text-left"
+              >
+                <span>
+                  <span class="font-medium block">
+                    {s.subject} · {s.class.name}
+                  </span>
+                  <span class="gt-muted text-sm block">
+                    {times.join(", ")}
+                  </span>
+                </span>
+                <span class="gt-btn-secondary text-xs px-3 py-1.5 shrink-0 ml-2">
                   Buat Jurnal
-                </button>
-              </form>
-            </div>
+                </span>
+              </button>
+            </form>
           );
         })}
 
@@ -262,5 +268,5 @@ journalRoutes.post("/app/journal/:id{[0-9]+}", async (c) => {
     status,
   });
 
-  return c.redirect(`/app/journal/${id}`);
+  return c.redirect(`/app/journal?date=${encodeURIComponent(journal.date)}`);
 });
