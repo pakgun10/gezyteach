@@ -45,6 +45,51 @@ const MONTHS = [
 
 const ATTENDANCE_HISTORY_PAGE_SIZE = 20;
 
+type AttendanceSchedule = Awaited<ReturnType<typeof listSchedulesByUser>>[number];
+
+type AttendanceClassSubjectOption = {
+  key: string;
+  classId: number;
+  className: string;
+  subject: string;
+  schedules: AttendanceSchedule[];
+};
+
+function attendanceSubjectKey(subject: string) {
+  return subject.trim().toLocaleLowerCase("id-ID");
+}
+
+function attendanceClassSubjectKey(classId: number, subject: string) {
+  return `${classId}:${attendanceSubjectKey(subject)}`;
+}
+
+function buildAttendanceClassSubjectOptions(
+  schedules: AttendanceSchedule[],
+): AttendanceClassSubjectOption[] {
+  const grouped = new Map<string, AttendanceClassSubjectOption>();
+
+  for (const schedule of schedules) {
+    const subject = schedule.subject.trim();
+    const key = attendanceClassSubjectKey(schedule.classId, subject);
+    const existing = grouped.get(key);
+    if (existing) {
+      existing.schedules.push(schedule);
+      continue;
+    }
+    grouped.set(key, {
+      key,
+      classId: schedule.classId,
+      className: schedule.class.name,
+      subject,
+      schedules: [schedule],
+    });
+  }
+
+  return [...grouped.values()].sort((a, b) =>
+    a.className.localeCompare(b.className, "id") || a.subject.localeCompare(b.subject, "id"),
+  );
+}
+
 function attendanceHistoryHref(classId: number, month: string, page: number) {
   const params = new URLSearchParams({
     classId: String(classId),
@@ -79,14 +124,29 @@ function formatDateOnly(dateIso: string) {
 attendanceRoutes.get("/app/attendance", async (c) => {
   const user = c.get("user");
   const date = c.req.query("date") || todayIso();
-  const scheduleId = c.req.query("scheduleId")
+  const requestedScheduleId = c.req.query("scheduleId")
     ? Number(c.req.query("scheduleId"))
     : undefined;
 
   const schedules = await listSchedulesByUser(user.id);
-  const selectedSchedule = scheduleId
-    ? schedules.find((s) => s.id === scheduleId)
+  const classSubjectOptions = buildAttendanceClassSubjectOptions(schedules);
+  const legacySchedule = requestedScheduleId
+    ? schedules.find((schedule) => schedule.id === requestedScheduleId)
     : undefined;
+  const requestedClassSubject = c.req.query("classSubject")?.trim();
+  const legacyClassSubject = legacySchedule
+    ? attendanceClassSubjectKey(legacySchedule.classId, legacySchedule.subject)
+    : undefined;
+  const selectedClassSubjectKey = requestedClassSubject || legacyClassSubject;
+  const selectedClassSubject = classSubjectOptions.find(
+    (option) => option.key === selectedClassSubjectKey,
+  );
+  const selectedDay = dayOfWeekFromIso(date);
+  const matchingSchedules = selectedClassSubject?.schedules.filter(
+    (schedule) => schedule.dayOfWeek === selectedDay,
+  ) ?? [];
+  const selectedSchedule = legacySchedule
+    ?? matchingSchedules[0];
 
   const attendanceList = selectedSchedule
     ? await getAttendanceForSchedule(
@@ -96,6 +156,7 @@ attendanceRoutes.get("/app/attendance", async (c) => {
       )
     : [];
   const hasSavedAttendance = attendanceList.some((item) => item.status !== null);
+  const hasMatchingSchedule = matchingSchedules.length > 0;
 
   return c.html(
     <Layout title="Absensi" user={user} activeNav="attendance">
@@ -115,19 +176,43 @@ attendanceRoutes.get("/app/attendance", async (c) => {
         action="/app/attendance"
         class="gt-card p-4 mb-4 grid grid-cols-1 sm:grid-cols-2 gap-2"
       >
-        <select name="scheduleId" required class="gt-input">
+        <select name="classSubject" required class="gt-input">
           <option value="">Pilih kelas & mapel</option>
-          {schedules.map((s) => (
-            <option value={s.id} selected={s.id === scheduleId}>
-              {s.class.name} · {s.subject}
+          {classSubjectOptions.map((option) => (
+            <option value={option.key} selected={option.key === selectedClassSubjectKey}>
+              {option.className} · {option.subject}
             </option>
           ))}
         </select>
         <input type="date" name="date" value={date} class="gt-input" />
+        <p class="gt-muted text-xs sm:col-span-2" id="attendance-selected-day">
+          Hari: {DAY_NAMES[selectedDay]}
+        </p>
         <button type="submit" class="gt-btn-primary sm:col-span-2 py-2">
           Tampilkan
         </button>
       </form>
+
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            (function () {
+              var dateInput = document.querySelector('input[name="date"]');
+              var dayOutput = document.getElementById('attendance-selected-day');
+              var days = ${JSON.stringify(DAY_NAMES)};
+              if (!dateInput || !dayOutput) return;
+              function updateDay() {
+                if (!dateInput.value) return;
+                var parts = dateInput.value.split('-').map(Number);
+                var selectedDate = new Date(parts[0], parts[1] - 1, parts[2]);
+                dayOutput.textContent = 'Hari: ' + days[selectedDate.getDay()];
+              }
+              dateInput.addEventListener('change', updateDay);
+              updateDay();
+            })();
+          `,
+        }}
+      />
 
       {schedules.length === 0 && (
         <p class="gt-muted text-sm text-center py-8">
@@ -135,7 +220,14 @@ attendanceRoutes.get("/app/attendance", async (c) => {
         </p>
       )}
 
-      {selectedSchedule && (
+      {selectedClassSubject && !hasMatchingSchedule && !legacySchedule && (
+        <div class="gt-badge-amber rounded-lg px-3 py-2 text-sm mb-4">
+          Tidak ada jadwal {selectedClassSubject.className} · {selectedClassSubject.subject}
+          pada hari {DAY_NAMES[selectedDay]}. Pilih tanggal sesuai hari jadwal tersebut.
+        </div>
+      )}
+
+      {selectedSchedule && (hasMatchingSchedule || !!legacySchedule) && (
         <div class="gt-card p-4">
           <div class="flex items-center justify-between mb-3">
             <div>
@@ -143,6 +235,9 @@ attendanceRoutes.get("/app/attendance", async (c) => {
                 {selectedSchedule.class.name} · {selectedSchedule.subject}
               </p>
               <p class="gt-muted text-sm">{formatDateLabel(date)}</p>
+              <p class="gt-subtle text-xs">
+                Jadwal: {DAY_NAMES[selectedSchedule.dayOfWeek]} · {selectedSchedule.startTime}–{selectedSchedule.endTime}
+              </p>
             </div>
             <button
               type="button"
