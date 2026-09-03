@@ -100,7 +100,15 @@ attendanceRoutes.get("/app/attendance", async (c) => {
   return c.html(
     <Layout title="Absensi" user={user} activeNav="attendance">
       <AttendanceTabs active="students" />
-      <h1 class="text-xl font-semibold mb-4">Absensi Siswa</h1>
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h1 class="text-xl font-semibold">Absensi Siswa</h1>
+        <a
+          href={`/app/attendance/report${selectedSchedule ? `?scheduleId=${selectedSchedule.id}` : ""}`}
+          class="gt-btn-secondary px-3 py-2 text-sm whitespace-nowrap"
+        >
+          🖨️ Print Rekap Kehadiran
+        </a>
+      </div>
 
       <form
         method="get"

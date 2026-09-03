@@ -21,6 +21,93 @@ export type ClassRecap = {
   totals: { h: number; s: number; i: number; a: number };
 };
 
+export type ScheduleRecap = {
+  scheduleId: number;
+  classId: number;
+  totalMeetings: number;
+  rows: RecapRow[];
+  totals: { h: number; s: number; i: number; a: number };
+};
+
+/** Rekap satu jadwal (kelas + mapel) dalam rentang tanggal tertentu. */
+export async function getAttendanceScheduleRecap(
+  scheduleId: number,
+  classId: number,
+  start: string,
+  end: string,
+): Promise<ScheduleRecap> {
+  const [students, records] = await Promise.all([
+    listStudentsByClass(classId),
+    db.query.attendance.findMany({
+      where: (a, { eq, gte, lte, and: andFn }) =>
+        andFn(eq(a.scheduleId, scheduleId), gte(a.date, start), lte(a.date, end)),
+    }),
+  ]);
+
+  const studentsById = new Map(students.map((student) => [student.id, student]));
+  const dates = new Set<string>();
+  const rowsByStudent = new Map<number, RecapRow>();
+
+  for (const record of records) {
+    const student = studentsById.get(record.studentId);
+    if (!student) continue;
+
+    dates.add(record.date);
+    const row = rowsByStudent.get(student.id) ?? {
+      nis: student.nis,
+      name: student.name,
+      h: 0,
+      s: 0,
+      i: 0,
+      a: 0,
+      total: 0,
+      pct: null,
+    };
+    if (record.status === "H") row.h++;
+    else if (record.status === "S") row.s++;
+    else if (record.status === "I") row.i++;
+    else if (record.status === "A") row.a++;
+    row.total++;
+    rowsByStudent.set(student.id, row);
+  }
+
+  const totalMeetings = dates.size;
+  const rows = students.map((student) => {
+    const row = rowsByStudent.get(student.id) ?? {
+      nis: student.nis,
+      name: student.name,
+      h: 0,
+      s: 0,
+      i: 0,
+      a: 0,
+      total: 0,
+      pct: null,
+    };
+    row.total = totalMeetings;
+    row.pct = totalMeetings > 0 ? Math.round((row.h / totalMeetings) * 100) : null;
+    return row;
+  });
+  rows.sort((a, b) => a.name.localeCompare(b.name, "id"));
+
+  const totals = rows.reduce(
+    (result, row) => ({
+      h: result.h + row.h,
+      s: result.s + row.s,
+      i: result.i + row.i,
+      a: result.a + row.a,
+    }),
+    { h: 0, s: 0, i: 0, a: 0 },
+  );
+
+  return {
+    scheduleId,
+    classId,
+    totalMeetings,
+    rows,
+    totals,
+  };
+}
+
 /**
  * Rekapitulasi absensi untuk satu guru: per kelas (agregasi semua jadwal
  * guru untuk kelas itu), per murid, dalam rentang tanggal [start, end].
