@@ -176,7 +176,7 @@ journalRoutes.get("/app/journal/:id{[0-9]+}", async (c) => {
         </label>
 
         <label class="block">
-          <span class="gt-label">Capaian Pembelajaran</span>
+          <span class="gt-label">Kegiatan Pembelajaran</span>
           <textarea name="achievement" rows={2} class="gt-input journal-textarea">
             {journal.achievement ?? ""}
           </textarea>

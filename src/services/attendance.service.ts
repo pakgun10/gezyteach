@@ -145,3 +145,12 @@ export async function saveAttendance(
     }
   }
 }
+
+export async function deleteAttendanceForScheduleDate(
+  scheduleId: number,
+  date: string,
+) {
+  await db
+    .delete(attendance)
+    .where(and(eq(attendance.scheduleId, scheduleId), eq(attendance.date, date)));
+}

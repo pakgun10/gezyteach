@@ -131,7 +131,7 @@ gezyteach/
 | scheduleId | INTEGER FK | Jadwal yang menjadi dasar |
 | date | TEXT | Format YYYY-MM-DD |
 | topic | TEXT | Materi/pembelajaran |
-| achievement | TEXT | Capaian pembelajaran |
+| achievement | TEXT | Kegiatan pembelajaran |
 | reflection | TEXT | Refleksi guru (opsional) |
 | obstacle | TEXT | Kendala (opsional) |
 | presentCount | INTEGER | Jumlah hadir |

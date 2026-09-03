@@ -194,7 +194,7 @@ function JournalReportPage({
                   <th>No.</th>
                   <th>Tanggal</th>
                   <th>Materi / Topik</th>
-                  <th>Capaian Pembelajaran</th>
+                  <th>Kegiatan Pembelajaran</th>
                   <th>Hadir</th>
                   <th>Tidak Hadir</th>
                   <th>Refleksi</th>

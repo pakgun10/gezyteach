@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import type { SessionUser } from "../services/auth.service";
 import {
+  deleteAttendanceForScheduleDate,
   getAttendanceForSchedule,
   listAttendanceExecutionsPage,
   saveAttendance,
@@ -94,6 +95,7 @@ attendanceRoutes.get("/app/attendance", async (c) => {
         date,
       )
     : [];
+  const hasSavedAttendance = attendanceList.some((item) => item.status !== null);
 
   return c.html(
     <Layout title="Absensi" user={user} activeNav="attendance">
@@ -189,6 +191,21 @@ attendanceRoutes.get("/app/attendance", async (c) => {
               </button>
             )}
           </form>
+
+          {hasSavedAttendance && (
+            <form
+              method="post"
+              action="/app/attendance/delete"
+              class="mt-2"
+              onsubmit={`return confirm('Hapus seluruh absensi untuk ${formatDateLabel(date)}? Tindakan ini tidak bisa dibatalkan.')`}
+            >
+              <input type="hidden" name="scheduleId" value={selectedSchedule.id} />
+              <input type="hidden" name="date" value={date} />
+              <button type="submit" class="gt-btn-danger w-full py-2.5">
+                Hapus Absensi
+              </button>
+            </form>
+          )}
         </div>
       )}
     </Layout>,
@@ -395,6 +412,20 @@ attendanceRoutes.post("/app/attendance", async (c) => {
   }
 
   await saveAttendance(scheduleId, date, entries);
+
+  return c.redirect(`/app/attendance?scheduleId=${scheduleId}&date=${date}`);
+});
+
+attendanceRoutes.post("/app/attendance/delete", async (c) => {
+  const user = c.get("user");
+  const body = await c.req.parseBody();
+  const scheduleId = Number(body.scheduleId);
+  const date = String(body.date || todayIso());
+
+  const schedule = await getScheduleForUser(user.id, scheduleId);
+  if (!schedule) return c.redirect("/app/attendance");
+
+  await deleteAttendanceForScheduleDate(scheduleId, date);
 
   return c.redirect(`/app/attendance?scheduleId=${scheduleId}&date=${date}`);
 });
