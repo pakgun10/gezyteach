@@ -7,6 +7,7 @@ type LayoutProps = {
   title: string;
   user?: SessionUser;
   activeNav?: string;
+  printMode?: boolean;
   children: any;
 };
 
@@ -14,6 +15,7 @@ export const Layout: FC<LayoutProps> = ({
   title,
   user,
   activeNav,
+  printMode,
   children,
 }) => {
   return (
@@ -26,7 +28,7 @@ export const Layout: FC<LayoutProps> = ({
         <link rel="stylesheet" href="/static/style.css" />
         <script src="/vendor/htmx.min.js" defer />
       </head>
-      <body class="gt-transition min-h-screen flex flex-col">
+      <body class={`gt-transition min-h-screen flex flex-col ${printMode ? "print-mode" : ""}`}>
         {user ? (
           <>
             <header class="gt-header-glass sticky top-0 z-10 px-4 py-3 flex items-center justify-between">
@@ -46,15 +48,23 @@ export const Layout: FC<LayoutProps> = ({
             <main class="flex-1 px-4 py-4 pb-24 max-w-3xl w-full mx-auto">
               {children}
             </main>
+            <footer class="gt-site-footer gt-site-footer-auth">
+              © 2026 GezyTeach Platform by Pak Gun. All rights reserved.
+            </footer>
             <Navbar active={activeNav} user={user} />
           </>
         ) : (
-          <main class="flex-1 flex items-center justify-center px-4 relative">
-            <div class="absolute top-4 right-4">
-              <ThemeToggle />
-            </div>
-            {children}
-          </main>
+          <>
+            <main class="flex-1 flex items-center justify-center px-4 relative">
+              <div class="absolute top-4 right-4">
+                <ThemeToggle />
+              </div>
+              {children}
+            </main>
+            <footer class="gt-site-footer">
+              © 2026 GezyTeach Platform by Pak Gun. All rights reserved.
+            </footer>
+          </>
         )}
       </body>
     </html>

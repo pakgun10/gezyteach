@@ -10,6 +10,7 @@ export type SessionUser = {
   id: number;
   name: string;
   email: string;
+  nip: string | null;
   role: UserRole;
 };
 
@@ -53,6 +54,7 @@ export async function getSessionUser(
       id: users.id,
       name: users.name,
       email: users.email,
+      nip: users.nip,
       role: users.role,
     })
     .from(sessions)
@@ -71,6 +73,7 @@ export async function getSessionUser(
     id: sessionUser.id,
     name: sessionUser.name,
     email: sessionUser.email,
+    nip: sessionUser.nip ?? null,
     role: sessionUser.role as UserRole,
   };
 }

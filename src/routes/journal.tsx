@@ -9,7 +9,7 @@ import {
 } from "../services/journal.service";
 import { listSchedulesByUserAndDay } from "../services/schedule.service";
 import { Layout } from "../components/Layout";
-import { Alert } from "../components/Alert";
+import { JournalTabs } from "../components/JournalTabs";
 import { dayOfWeekFromIso, formatDateLabel, todayIso } from "../utils/dates";
 
 type AppContext = {
@@ -53,10 +53,7 @@ journalRoutes.get("/app/journal", async (c) => {
 
   return c.html(
     <Layout title="Jurnal" user={user} activeNav="journal">
-      <div class="flex gap-2 mb-5 text-sm overflow-x-auto no-scrollbar">
-        <a href="/app/journal" class="gt-btn-primary inline-flex items-center px-3 py-2 whitespace-nowrap">Jurnal Mengajar</a>
-        <a href="/app/journal/anecdotal" class="gt-btn-secondary inline-flex items-center px-3 py-2 whitespace-nowrap">Anecdotal Record</a>
-      </div>
+      <JournalTabs active="teaching" />
       <h1 class="text-xl font-semibold mb-1">Jurnal Mengajar</h1>
       <p class="gt-muted text-sm mb-4">{formatDateLabel(date)}</p>
 
@@ -155,10 +152,7 @@ journalRoutes.get("/app/journal/:id{[0-9]+}", async (c) => {
 
   return c.html(
     <Layout title="Jurnal" user={user} activeNav="journal">
-      <div class="flex gap-2 mb-5 text-sm overflow-x-auto no-scrollbar">
-        <a href="/app/journal" class="gt-btn-primary inline-flex items-center px-3 py-2 whitespace-nowrap">Jurnal Mengajar</a>
-        <a href="/app/journal/anecdotal" class="gt-btn-secondary inline-flex items-center px-3 py-2 whitespace-nowrap">Anecdotal Record</a>
-      </div>
+      <JournalTabs active="teaching" />
       <div class="flex items-center gap-2 mb-1">
         <a href="/app/journal" class="gt-subtle">
           ‹
@@ -176,14 +170,14 @@ journalRoutes.get("/app/journal/:id{[0-9]+}", async (c) => {
       >
         <label class="block">
           <span class="gt-label">Materi / Topik Pembelajaran</span>
-          <textarea name="topic" rows={2} class="gt-input">
+          <textarea name="topic" rows={2} class="gt-input journal-textarea">
             {journal.topic ?? ""}
           </textarea>
         </label>
 
         <label class="block">
           <span class="gt-label">Capaian Pembelajaran</span>
-          <textarea name="achievement" rows={2} class="gt-input">
+          <textarea name="achievement" rows={2} class="gt-input journal-textarea">
             {journal.achievement ?? ""}
           </textarea>
         </label>
@@ -213,15 +207,22 @@ journalRoutes.get("/app/journal/:id{[0-9]+}", async (c) => {
 
         <label class="block">
           <span class="gt-label">Refleksi (opsional)</span>
-          <textarea name="reflection" rows={2} class="gt-input">
+          <textarea name="reflection" rows={2} class="gt-input journal-textarea">
             {journal.reflection ?? ""}
           </textarea>
         </label>
 
         <label class="block">
           <span class="gt-label">Kendala (opsional)</span>
-          <textarea name="obstacle" rows={2} class="gt-input">
+          <textarea name="obstacle" rows={2} class="gt-input journal-textarea">
             {journal.obstacle ?? ""}
+          </textarea>
+        </label>
+
+        <label class="block">
+          <span class="gt-label">Rencana Tindak Lanjut (opsional)</span>
+          <textarea name="followUpPlan" rows={2} class="gt-input journal-textarea">
+            {journal.followUpPlan ?? ""}
           </textarea>
         </label>
 
@@ -263,6 +264,7 @@ journalRoutes.post("/app/journal/:id{[0-9]+}", async (c) => {
     achievement: String(body.achievement ?? "").trim() || undefined,
     reflection: String(body.reflection ?? "").trim() || undefined,
     obstacle: String(body.obstacle ?? "").trim() || undefined,
+    followUpPlan: String(body.followUpPlan ?? "").trim() || undefined,
     presentCount: body.presentCount ? Number(body.presentCount) : undefined,
     absentCount: body.absentCount ? Number(body.absentCount) : undefined,
     status,

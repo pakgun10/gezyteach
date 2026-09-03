@@ -12,6 +12,7 @@ export async function listUsers() {
       id: true,
       name: true,
       email: true,
+      nip: true,
       role: true,
       createdAt: true,
     },
@@ -25,6 +26,7 @@ export async function getUserById(id: number) {
       id: true,
       name: true,
       email: true,
+      nip: true,
       role: true,
       createdAt: true,
     },
@@ -38,6 +40,7 @@ export type CreateUserResult =
 export async function createUser(data: {
   name: string;
   email: string;
+  nip?: string;
   password: string;
   role: UserRole;
 }): Promise<CreateUserResult> {
@@ -64,6 +67,7 @@ export async function createUser(data: {
     .values({
       name: data.name.trim(),
       email: data.email.trim(),
+      nip: data.nip?.trim() || null,
       passwordHash,
       role: data.role,
     })
@@ -78,7 +82,7 @@ export type UpdateUserResult =
 
 export async function updateUser(
   id: number,
-  data: { name: string; email: string; role: UserRole },
+  data: { name: string; email: string; nip?: string; role: UserRole },
 ): Promise<UpdateUserResult> {
   if (!data.name.trim() || !data.email.trim()) {
     return { ok: false, error: "invalid" };
@@ -107,6 +111,7 @@ export async function updateUser(
     .set({
       name: data.name.trim(),
       email: data.email.trim(),
+      nip: data.nip?.trim() || null,
       role: data.role,
       updatedAt: Date.now(),
     })

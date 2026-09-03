@@ -34,17 +34,27 @@ function ProfilePage({
         <p class="font-medium mb-2">{user.name}</p>
         <p class="gt-muted text-sm">Email</p>
         <p class="font-medium mb-2">{user.email}</p>
+        <p class="gt-muted text-sm">NIP</p>
+        <p class="font-medium mb-2">{user.nip || "Belum diatur"}</p>
         <p class="gt-muted text-sm">Role</p>
         <p class="font-medium capitalize">{user.role}</p>
       </div>
 
       {user.role === "admin" && (
-        <a href="/app/admin/users" class="gt-card gt-card-hover block p-4 mb-4">
-          <p class="font-medium">⚙️ Kelola User</p>
-          <p class="gt-muted text-sm">
-            Tambah, edit, atau hapus akun guru lain
-          </p>
-        </a>
+        <>
+          <a href="/app/admin/school" class="gt-card gt-card-hover block p-4 mb-3">
+            <p class="font-medium">🏫 Data Sekolah</p>
+            <p class="gt-muted text-sm">
+              Atur identitas sekolah, kepala sekolah, dan default laporan
+            </p>
+          </a>
+          <a href="/app/admin/users" class="gt-card gt-card-hover block p-4 mb-4">
+            <p class="font-medium">⚙️ Kelola User</p>
+            <p class="gt-muted text-sm">
+              Tambah, edit, atau hapus akun guru lain
+            </p>
+          </a>
+        </>
       )}
 
       <div class="gt-card p-4">

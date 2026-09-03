@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import type { SessionUser } from "../services/auth.service";
 import { Layout } from "../components/Layout";
+import { JournalTabs } from "../components/JournalTabs";
 import { todayIso } from "../utils/dates";
 import { createRecord, deleteRecord, getRecordForTeacher, listActiveStudentsForTeacher, listRecords, listRecordsPage, listTeachingClasses, listUnobservedStudents, listVisionValues, monthlyRecap, saveNarrative, semesterRecap, updateRecord } from "../services/anecdotal.service";
 import type { RecordCategory } from "../services/anecdotal.service";
@@ -45,11 +46,6 @@ function compactPageNumbers(page: number, totalPages: number) {
     result.push(item);
   }
   return result;
-}
-
-function JournalTabs({ active }: { active: "teaching" | "anecdotal" }) {
-  const tabClass = "inline-flex items-center px-3 py-2 whitespace-nowrap";
-  return <div class="flex gap-2 mb-5 text-sm overflow-x-auto no-scrollbar"><a href="/app/journal" class={`${tabClass} ${active === "teaching" ? "gt-btn-primary" : "gt-btn-secondary"}`}>Jurnal Mengajar</a><a href="/app/journal/anecdotal" class={`${tabClass} ${active === "anecdotal" ? "gt-btn-primary" : "gt-btn-secondary"}`}>Anecdotal Record</a></div>;
 }
 
 function RecordForm({ action, classes, students, values, record }: { action: string; classes: any[]; students: any[]; values: any[]; record?: any }) {

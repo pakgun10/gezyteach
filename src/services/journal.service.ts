@@ -1,9 +1,61 @@
-import { and, eq } from "drizzle-orm";
+import { and, asc, eq, gte, lte } from "drizzle-orm";
 import { db } from "../db";
-import { journals } from "../db/schema";
+import { classes, journals, schedules } from "../db/schema";
 
 export function normalizeJournalSubject(subject: string) {
   return subject.trim().toLocaleLowerCase("id-ID");
+}
+
+export async function listJournalClasses(userId: number) {
+  const rows = await db
+    .select({
+      id: classes.id,
+      name: classes.name,
+      level: classes.level,
+      academicYear: classes.academicYear,
+    })
+    .from(schedules)
+    .innerJoin(classes, eq(schedules.classId, classes.id))
+    .where(eq(schedules.userId, userId))
+    .orderBy(asc(classes.name));
+
+  return [...new Map(rows.map((row) => [row.id, row])).values()];
+}
+
+export async function listJournalSubjects(userId: number, classId: number) {
+  const rows = await db
+    .select({ subject: schedules.subject })
+    .from(schedules)
+    .where(and(eq(schedules.userId, userId), eq(schedules.classId, classId)))
+    .orderBy(asc(schedules.subject));
+
+  const uniqueSubjects = new Map<string, string>();
+  for (const row of rows) {
+    const subject = row.subject.trim();
+    if (subject) uniqueSubjects.set(normalizeJournalSubject(subject), subject);
+  }
+  return [...uniqueSubjects.values()];
+}
+
+export async function listJournalsForReport(
+  userId: number,
+  classId: number,
+  subject: string,
+  dateFrom: string,
+  dateTo: string,
+) {
+  return db.query.journals.findMany({
+    where: (journal, { and: andFn, eq: eqFn, gte: gteFn, lte: lteFn }) =>
+      andFn(
+        eqFn(journal.userId, userId),
+        eqFn(journal.classId, classId),
+        eqFn(journal.subjectKey, normalizeJournalSubject(subject)),
+        gteFn(journal.date, dateFrom),
+        lteFn(journal.date, dateTo),
+      ),
+    orderBy: (journal, { asc: ascFn }) => [ascFn(journal.date), ascFn(journal.id)],
+    with: { schedule: { columns: { subject: true } } },
+  });
 }
 
 export async function listJournalsByDate(userId: number, date: string) {
@@ -80,6 +132,7 @@ export async function updateJournal(
     achievement?: string;
     reflection?: string;
     obstacle?: string;
+    followUpPlan?: string;
     presentCount?: number;
     absentCount?: number;
     status: "draft" | "completed";
@@ -92,6 +145,7 @@ export async function updateJournal(
       achievement: data.achievement || null,
       reflection: data.reflection || null,
       obstacle: data.obstacle || null,
+      followUpPlan: data.followUpPlan || null,
       presentCount: data.presentCount ?? null,
       absentCount: data.absentCount ?? null,
       status: data.status,

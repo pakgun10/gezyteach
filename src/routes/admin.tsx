@@ -73,6 +73,12 @@ function AdminUsersPage({
             class="gt-input"
           />
           <input
+            type="text"
+            name="nip"
+            placeholder="NIP (opsional)"
+            class="gt-input"
+          />
+          <input
             type="password"
             name="password"
             placeholder="Password (min. 8 karakter)"
@@ -95,7 +101,7 @@ function AdminUsersPage({
             <form
               method="post"
               action={`/app/admin/users/${u.id}`}
-              class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2"
+              class="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-2"
             >
               <input
                 type="text"
@@ -109,6 +115,16 @@ function AdminUsersPage({
                 value={u.email}
                 class="gt-input text-sm py-2"
               />
+              <input
+                type="text"
+                name="nip"
+                value={u.nip ?? ""}
+                placeholder="NIP (opsional)"
+                class="gt-input text-sm py-2"
+              />
+              {u.id === currentUser.id && (
+                <input type="hidden" name="role" value={u.role} />
+              )}
               <select
                 name="role"
                 disabled={u.id === currentUser.id}
@@ -123,7 +139,7 @@ function AdminUsersPage({
               </select>
               <button
                 type="submit"
-                class="gt-btn-secondary sm:col-span-3 text-sm px-3 py-1.5 self-start"
+                class="gt-btn-secondary sm:col-span-4 text-sm px-3 py-1.5 self-start"
               >
                 Simpan Perubahan
               </button>
@@ -187,12 +203,13 @@ adminRoutes.post("/app/admin/users", async (c) => {
   const body = await c.req.parseBody();
   const name = String(body.name ?? "").trim();
   const email = String(body.email ?? "").trim();
+  const nip = String(body.nip ?? "").trim();
   const password = String(body.password ?? "");
   const role = (
     String(body.role ?? "guru") === "admin" ? "admin" : "guru"
   ) as UserRole;
 
-  const result = await createUser({ name, email, password, role });
+  const result = await createUser({ name, email, nip, password, role });
 
   if (!result.ok) {
     return c.redirect(`/app/admin/users?error=${result.error}`);
@@ -206,11 +223,12 @@ adminRoutes.post("/app/admin/users/:id", async (c) => {
   const body = await c.req.parseBody();
   const name = String(body.name ?? "").trim();
   const email = String(body.email ?? "").trim();
+  const nip = String(body.nip ?? "").trim();
   const role = (
     String(body.role ?? "guru") === "admin" ? "admin" : "guru"
   ) as UserRole;
 
-  const result = await updateUser(id, { name, email, role });
+  const result = await updateUser(id, { name, email, nip, role });
 
   if (!result.ok) {
     return c.redirect(`/app/admin/users?error=${result.error}`);

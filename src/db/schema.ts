@@ -22,10 +22,26 @@ export const users = sqliteTable("users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
+  nip: text("nip"),
   passwordHash: text("password_hash").notNull(),
   role: text("role", { enum: ["admin", "guru"] })
     .notNull()
     .default("guru"),
+  ...timestamps,
+});
+
+/** Identitas sekolah dan default metadata laporan, satu profil per instalasi. */
+export const schoolProfiles = sqliteTable("school_profiles", {
+  id: integer("id").primaryKey(),
+  schoolName: text("school_name"),
+  address: text("address"),
+  city: text("city"),
+  principalName: text("principal_name"),
+  principalNip: text("principal_nip"),
+  defaultAcademicYear: text("default_academic_year"),
+  defaultSemester: text("default_semester", { enum: ["1", "2"] })
+    .notNull()
+    .default("1"),
   ...timestamps,
 });
 
@@ -141,6 +157,7 @@ export const journals = sqliteTable(
     achievement: text("achievement"),
     reflection: text("reflection"),
     obstacle: text("obstacle"),
+    followUpPlan: text("follow_up_plan"),
     presentCount: integer("present_count"),
     absentCount: integer("absent_count"),
     status: text("status", { enum: ["draft", "completed"] })

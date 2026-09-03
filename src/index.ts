@@ -8,10 +8,12 @@ import { attendanceRecapRoutes } from "./routes/attendance-recap.tsx";
 import { authRoutes } from "./routes/auth.tsx";
 import { dashboardRoutes } from "./routes/dashboard.tsx";
 import { journalRoutes } from "./routes/journal.tsx";
+import { journalReportRoutes } from "./routes/journal-report.tsx";
 import { anecdotalRoutes } from "./routes/anecdotal.tsx";
 import { profileRoutes } from "./routes/profile.tsx";
 import { resourcesRoutes } from "./routes/resources.tsx";
 import { scheduleRoutes } from "./routes/schedule.tsx";
+import { schoolRoutes } from "./routes/school.tsx";
 import { scoresRoutes } from "./routes/scores.tsx";
 import { studentAuthRoutes } from "./routes/student-auth.tsx";
 import { studentPortalRoutes } from "./routes/student-portal.tsx";
@@ -39,12 +41,14 @@ app.route("/", scheduleRoutes);
 // `/app/journal/:id`, yang jika lebih dulu akan menganggap "anecdotal" sebagai id.
 app.route("/", anecdotalRoutes);
 app.route("/", journalRoutes);
+app.route("/", journalReportRoutes);
 app.route("/", attendanceRoutes);
 app.route("/", attendanceRecapRoutes);
 app.route("/", scoresRoutes);
 app.route("/", resourcesRoutes);
 app.route("/", profileRoutes);
 app.route("/", adminRoutes);
+app.route("/", schoolRoutes);
 
 app.route("/", studentAuthRoutes);
 
