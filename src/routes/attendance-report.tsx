@@ -3,8 +3,8 @@ import { AttendanceTabs } from "../components/AttendanceTabs";
 import { Layout } from "../components/Layout";
 import type { SessionUser } from "../services/auth.service";
 import {
-  getAttendanceScheduleRecap,
-  type ScheduleRecap,
+  getAttendanceReportRecap,
+  type AttendanceReportRecap,
 } from "../services/attendance-recap.service";
 import { getSchoolProfile } from "../services/school.service";
 import { listSchedulesByUser } from "../services/schedule.service";
@@ -31,11 +31,55 @@ function reportValue(value: string | null | undefined) {
   return value?.trim() || "—";
 }
 
+function subjectKey(subject: string) {
+  return subject.trim().toLocaleLowerCase("id-ID");
+}
+
+function attendanceReportOptionKey(classId: number, subject: string) {
+  return `${classId}:${subjectKey(subject)}`;
+}
+
+type ReportOption = {
+  key: string;
+  classId: number;
+  className: string;
+  subject: string;
+  scheduleIds: number[];
+};
+
+function buildReportOptions(
+  schedules: Awaited<ReturnType<typeof listSchedulesByUser>>,
+): ReportOption[] {
+  const grouped = new Map<string, ReportOption>();
+
+  for (const schedule of schedules) {
+    const subject = schedule.subject.trim();
+    const key = attendanceReportOptionKey(schedule.classId, subject);
+    const existing = grouped.get(key);
+    if (existing) {
+      existing.scheduleIds.push(schedule.id);
+      continue;
+    }
+    grouped.set(key, {
+      key,
+      classId: schedule.classId,
+      className: schedule.class.name,
+      subject,
+      scheduleIds: [schedule.id],
+    });
+  }
+
+  return [...grouped.values()].sort((a, b) =>
+    a.className.localeCompare(b.className, "id") || a.subject.localeCompare(b.subject, "id"),
+  );
+}
+
 function AttendanceReportPage({
   user,
   profile,
-  schedules,
-  selectedScheduleId,
+  options,
+  selectedOption,
+  selectedOptionKey,
   dateFrom,
   dateTo,
   academicYear,
@@ -44,15 +88,15 @@ function AttendanceReportPage({
 }: {
   user: SessionUser;
   profile: Awaited<ReturnType<typeof getSchoolProfile>>;
-  schedules: Awaited<ReturnType<typeof listSchedulesByUser>>;
-  selectedScheduleId?: number;
+  options: ReportOption[];
+  selectedOption?: ReportOption;
+  selectedOptionKey?: string;
   dateFrom: string;
   dateTo: string;
   academicYear: string;
   semester: "1" | "2";
-  recap: ScheduleRecap | null;
+  recap: AttendanceReportRecap | null;
 }) {
-  const selectedSchedule = schedules.find((schedule) => schedule.id === selectedScheduleId);
   const hasInvalidRange = dateFrom > dateTo;
   const canPrint = Boolean(recap && recap.totalMeetings > 0 && !hasInvalidRange);
   const location = [profile.address, profile.city].filter(Boolean).join(" · ");
@@ -66,7 +110,7 @@ function AttendanceReportPage({
             <div>
               <h1 class="text-xl font-semibold">Print Rekap Kehadiran</h1>
               <p class="gt-muted text-sm mt-1">
-                Pilih jadwal dan rentang tanggal, lalu simpan hasilnya sebagai PDF.
+                Pilih kelas, mata pelajaran, dan rentang tanggal, lalu simpan hasilnya sebagai PDF.
               </p>
             </div>
             <button
@@ -83,11 +127,11 @@ function AttendanceReportPage({
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label class="block sm:col-span-2">
                 <span class="gt-label">Kelas & mata pelajaran</span>
-                <select name="scheduleId" required class="gt-input">
+                <select name="classSubject" required class="gt-input">
                   <option value="">Pilih kelas & mata pelajaran</option>
-                  {schedules.map((schedule) => (
-                    <option value={schedule.id} selected={schedule.id === selectedScheduleId}>
-                      {schedule.class.name} · {schedule.subject}
+                  {options.map((option) => (
+                    <option value={option.key} selected={option.key === selectedOptionKey}>
+                      {option.className} · {option.subject}
                     </option>
                   ))}
                 </select>
@@ -137,12 +181,12 @@ function AttendanceReportPage({
               Nama sekolah belum diatur. Admin dapat melengkapinya di menu Data Sekolah.
             </div>
           )}
-          {schedules.length === 0 && (
+          {options.length === 0 && (
             <div class="gt-badge-amber rounded-lg px-3 py-2 text-sm mb-4">
               Belum ada jadwal mengajar yang dapat dibuatkan laporan.
             </div>
           )}
-          {selectedSchedule && recap && recap.totalMeetings === 0 && !hasInvalidRange && (
+          {selectedOption && recap && recap.totalMeetings === 0 && !hasInvalidRange && (
             <div class="gt-badge-amber rounded-lg px-3 py-2 text-sm mb-4">
               Belum ada absensi tersimpan pada jadwal dan rentang tanggal yang dipilih.
             </div>
@@ -158,8 +202,8 @@ function AttendanceReportPage({
           </header>
 
           <div class="journal-report-meta">
-            <div><span>Kelas</span><strong>{selectedSchedule?.class.name || "—"}</strong></div>
-            <div><span>Mata Pelajaran</span><strong>{selectedSchedule?.subject || "—"}</strong></div>
+            <div><span>Kelas</span><strong>{selectedOption?.className || "—"}</strong></div>
+            <div><span>Mata Pelajaran</span><strong>{selectedOption?.subject || "—"}</strong></div>
             <div><span>Tahun Pelajaran</span><strong>{reportValue(academicYear)}</strong></div>
             <div><span>Semester</span><strong>Semester {semester}</strong></div>
             <div class="journal-report-meta-wide">
@@ -243,29 +287,37 @@ attendanceReportRoutes.get("/app/attendance/report", async (c) => {
     listSchedulesByUser(user.id),
   ]);
 
+  const options = buildReportOptions(schedules);
+  const requestedOptionKey = c.req.query("classSubject")?.trim();
   const requestedScheduleId = Number(c.req.query("scheduleId"));
-  const selectedScheduleId = schedules.some((schedule) => schedule.id === requestedScheduleId)
-    ? requestedScheduleId
-    : schedules[0]?.id;
-  const selectedSchedule = schedules.find((schedule) => schedule.id === selectedScheduleId);
+  const legacySchedule = schedules.find((schedule) => schedule.id === requestedScheduleId);
+  const legacyOptionKey = legacySchedule
+    ? attendanceReportOptionKey(legacySchedule.classId, legacySchedule.subject)
+    : undefined;
+  const selectedOption = options.find(
+    (option) => option.key === (requestedOptionKey || legacyOptionKey),
+  ) ?? options[0];
 
   const today = todayIso();
   const requestedDateFrom = c.req.query("dateFrom") ?? "";
   const requestedDateTo = c.req.query("dateTo") ?? "";
   const dateFrom = isIsoDate(requestedDateFrom) ? requestedDateFrom : `${today.slice(0, 7)}-01`;
   const dateTo = isIsoDate(requestedDateTo) ? requestedDateTo : today;
+  const selectedClass = selectedOption
+    ? schedules.find((schedule) => schedule.id === selectedOption.scheduleIds[0])?.class
+    : undefined;
   const academicYear = c.req.query("academicYear")?.trim()
-    || selectedSchedule?.class.academicYear
+    || selectedClass?.academicYear
     || profile.defaultAcademicYear
     || defaultAcademicYear();
   const requestedSemester = c.req.query("semester");
   const semester: "1" | "2" = requestedSemester === "1" || requestedSemester === "2"
     ? requestedSemester
     : profile.defaultSemester;
-  const recap = selectedSchedule && dateFrom <= dateTo
-    ? await getAttendanceScheduleRecap(
-        selectedSchedule.id,
-        selectedSchedule.classId,
+  const recap = selectedOption && dateFrom <= dateTo
+    ? await getAttendanceReportRecap(
+        selectedOption.scheduleIds,
+        selectedOption.classId,
         dateFrom,
         dateTo,
       )
@@ -274,8 +326,9 @@ attendanceReportRoutes.get("/app/attendance/report", async (c) => {
     <AttendanceReportPage
       user={user}
       profile={profile}
-      schedules={schedules}
-      selectedScheduleId={selectedScheduleId}
+      options={options}
+      selectedOption={selectedOption}
+      selectedOptionKey={selectedOption?.key}
       dateFrom={dateFrom}
       dateTo={dateTo}
       academicYear={academicYear}

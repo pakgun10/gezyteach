@@ -1,3 +1,4 @@
+import { inArray } from "drizzle-orm";
 import { db } from "../db";
 import { listStudentsByClass } from "./student.service";
 import { listSchedulesByUser } from "./schedule.service";
@@ -21,38 +22,38 @@ export type ClassRecap = {
   totals: { h: number; s: number; i: number; a: number };
 };
 
-export type ScheduleRecap = {
-  scheduleId: number;
+export type AttendanceReportRecap = {
+  scheduleIds: number[];
   classId: number;
   totalMeetings: number;
   rows: RecapRow[];
   totals: { h: number; s: number; i: number; a: number };
 };
 
-/** Rekap satu jadwal (kelas + mapel) dalam rentang tanggal tertentu. */
-export async function getAttendanceScheduleRecap(
-  scheduleId: number,
+/** Rekap satu kombinasi kelas + mapel dari seluruh jadwal terkait. */
+export async function getAttendanceReportRecap(
+  scheduleIds: number[],
   classId: number,
   start: string,
   end: string,
-): Promise<ScheduleRecap> {
+): Promise<AttendanceReportRecap> {
   const [students, records] = await Promise.all([
     listStudentsByClass(classId),
     db.query.attendance.findMany({
       where: (a, { eq, gte, lte, and: andFn }) =>
-        andFn(eq(a.scheduleId, scheduleId), gte(a.date, start), lte(a.date, end)),
+        andFn(inArray(a.scheduleId, scheduleIds), gte(a.date, start), lte(a.date, end)),
     }),
   ]);
 
   const studentsById = new Map(students.map((student) => [student.id, student]));
-  const dates = new Set<string>();
+  const meetings = new Set<string>();
   const rowsByStudent = new Map<number, RecapRow>();
 
   for (const record of records) {
     const student = studentsById.get(record.studentId);
     if (!student) continue;
 
-    dates.add(record.date);
+    meetings.add(`${record.scheduleId}:${record.date}`);
     const row = rowsByStudent.get(student.id) ?? {
       nis: student.nis,
       name: student.name,
@@ -71,7 +72,7 @@ export async function getAttendanceScheduleRecap(
     rowsByStudent.set(student.id, row);
   }
 
-  const totalMeetings = dates.size;
+  const totalMeetings = meetings.size;
   const rows = students.map((student) => {
     const row = rowsByStudent.get(student.id) ?? {
       nis: student.nis,
@@ -100,7 +101,7 @@ export async function getAttendanceScheduleRecap(
   );
 
   return {
-    scheduleId,
+    scheduleIds,
     classId,
     totalMeetings,
     rows,
