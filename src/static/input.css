@@ -660,6 +660,18 @@
     .journal-report-footer {
         display: none;
     }
+    .attendance-report-table th:nth-child(1) { width: 4%; }
+    .attendance-report-table th:nth-child(2) { width: 17%; }
+    .attendance-report-table th:nth-child(3) { width: 28%; }
+    .attendance-report-table th:nth-child(n+4) { width: 8.5%; }
+    .attendance-report-table th:nth-child(1),
+    .attendance-report-table td:nth-child(1),
+    .attendance-report-table th:nth-child(2),
+    .attendance-report-table td:nth-child(2),
+    .attendance-report-table th:nth-child(n+4),
+    .attendance-report-table td:nth-child(n+4) {
+        text-align: center;
+    }
 
     @media print {
         @page {

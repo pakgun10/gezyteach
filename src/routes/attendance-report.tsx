@@ -174,7 +174,7 @@ function AttendanceReportPage({
 
           {recap && recap.totalMeetings > 0 ? (
             <div class="journal-report-table-wrap">
-              <table class="journal-report-table">
+              <table class="journal-report-table attendance-report-table">
                 <thead>
                   <tr>
                     <th>No.</th>
