@@ -3,6 +3,10 @@ import type { SessionUser } from "../services/auth.service";
 import { Navbar } from "./Navbar";
 import { ThemeInitScript, ThemeToggle } from "./ThemeToggle";
 
+// Naikkan versi ini setiap kali aset CSS berubah agar cache CDN/browser tidak
+// menampilkan stylesheet lama setelah deploy.
+const STATIC_ASSET_VERSION = "20260903-1";
+
 type LayoutProps = {
   title: string;
   user?: SessionUser;
@@ -25,7 +29,7 @@ export const Layout: FC<LayoutProps> = ({
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>{title} · GezyTeach</title>
         <ThemeInitScript />
-        <link rel="stylesheet" href="/static/style.css" />
+        <link rel="stylesheet" href={`/static/style.css?v=${STATIC_ASSET_VERSION}`} />
         <script src="/vendor/htmx.min.js" defer />
       </head>
       <body class={`gt-transition min-h-screen flex flex-col ${printMode ? "print-mode" : ""}`}>
